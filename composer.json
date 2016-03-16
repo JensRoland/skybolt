@@ -1,0 +1,15 @@
+{
+	"name": "jensroland/skybolt",
+	"description": "A PHP-based front end web performance framework",
+	"license": "MIT",
+	"authors": [
+		{ "name": "Jens Roland", "email": "mail@jensroland.com" }
+	],
+	"require": {
+		"tedivm/stash": "0.14.*"
+	},
+	"autoload": {
+		"psr-4": { "Skybolt\\": "src/Skybolt/" }
+	}
+}
+
