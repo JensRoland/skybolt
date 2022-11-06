@@ -8,6 +8,7 @@ header('Content-Type: text/html; charset=utf-8');
 <head>
 	<title>Skybolt Demo</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 	<meta name="description" content="Skybolt Technology Demo">
 	<base href="<?php echo SITE_ROOT; ?>">
 	<?php $skybolt->insertStylesheet('default') ?>

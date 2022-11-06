@@ -1,5 +1,5 @@
 # Security basics
-Header add Content-Security-Policy "default-src 'self' 'unsafe-inline';"  # FIXME: if possible, use strict-dynamic and a nonce on the loader script
+Header add Content-Security-Policy "default-src 'self' 'unsafe-inline'; img-src data: 'self';"  # FIXME: if possible, use strict-dynamic and a nonce on the loader script
 Header add X-Content-Type-Options "nosniff"
 Header add X-Frame-Options "SAMEORIGIN"
 Header add X-XSS-Protection "1; mode=block"
