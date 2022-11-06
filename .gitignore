@@ -16,14 +16,3 @@
 Desktop.ini
 Thumbs.db
 $RECYCLE.BIN/
-
-# Sublime Text stuff
-*.sublime-workspace
-
-# Vim stuff
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-Session.vim
-.netrwhist
-*~
-
