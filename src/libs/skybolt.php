@@ -115,7 +115,7 @@ class Skybolt {
 	}
 
 
-	private function buildTag($tagName, $attributes, $voidElement=true, $contents='')
+	private function buildTag($tagName, $attributes, $voidElement=true, $contents='', $includeLinebreaks=true)
 	{
 		$tag = '<'.$tagName;
 		foreach ($attributes as $key => $value) {
@@ -126,7 +126,12 @@ class Skybolt {
 		// Add closing tag and (optionally) content
 		if ( ! $voidElement) {
 			if ($contents != '') {
-				$tag .= PHP_EOL . $contents . PHP_EOL;
+				if ($includeLinebreaks) {
+					$tag .= PHP_EOL . $contents . PHP_EOL;
+				} else {
+					$tag .= $contents;
+				}
+				
 			}
 			$tag .= "</{$tagName}>";
 		}
@@ -158,7 +163,7 @@ class Skybolt {
 
 
 
-	// Renderer specifically for the cache loader (the only script we can't keep in localStorage)
+	// Renderer specifically for the cache loader & bootstrap script (the latter being the only script we can't keep in localStorage)
 	public function head() {
 		$asset = $this->getAsset('js', SKYBOLT_LOADER_NAME);
 
@@ -168,22 +173,21 @@ class Skybolt {
 		}
 		else
 		{
-			$loaderSrc = SITE_ROOT . 'scripts/v/'.$asset->version.'/'.$asset->name.'.js'; // TODO: URL resolution helper
-
-			$output = $this->buildTag('script', array('src'=>$loaderSrc), false) . PHP_EOL;
-			print($output);
-
+			// Insert the bootstrap script inlined, to load the cache loader from localStorage
+			$bootstrapAsset = $this->getAsset('js', 'skybolt-bootstrap.min');
+			$assetAttributes = array(
+				'id' => 'skybolt-bootstrap'
+			);
+			print( $this->buildTag('script', $assetAttributes, FALSE, $bootstrapAsset->getContents(), false) . PHP_EOL );
 			// Let's try flushing the response here, maybe we'll get a slight boost to TTFB
 			ob_flush();
 			flush();
 		}
 	}
 
-	// At the bottom of the <body>, we load all necessary assets from cache and store anything that was inlined
+	// At the bottom of the <body>, we store anything that was inlined
 	public function body() {
 		$this->insertScript('skybolt-store');
-		$output = "\t<script>Skybolt.loadFromCache();</script>" . PHP_EOL;
-		print($output);
 	}
 
 

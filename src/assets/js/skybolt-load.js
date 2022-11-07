@@ -73,52 +73,41 @@ var Skybolt = (function (window, document, localStorage) {
 		}
 	}
 
-	// Cache this script
-	// Fetch cache loader JS file from server without executing it, to prime the client cache
-	function loadSelfIntoCache(version) {
-		var xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState === 4) {
-				if (xhr.status === 200 || xhr.status === 304) {
-					// Fix memory leak in IE
-					xhr.onreadystatechange = function(){};
-					// When the cacheloader is in the browser cache, we set a cookie to inform the server
-					document.cookie = 'loadercached=' + version;
-				}
-			}
-		};
-		xhr.open('GET', baseUrl+version+'/'+loaderScriptName+'.js'); // TODO: proper path resolution here
-		xhr.send();
-	}
-
-
-
 	// Initialization logic
-
-	// Try to pull up the existing cached assets
-	var cacheJSON = localStorage.getItem(localStorageCacheKey);
-	if (cacheJSON !== null) {
-		try {
-			this.assetMap = JSON.parse(cacheJSON);
-		} catch (err) {
-			selfdestruct();
+	this.init = function() {
+		// Try to pull up the existing cached assets
+		var cacheJSON = localStorage.getItem(localStorageCacheKey);
+		if (cacheJSON !== null) {
+			try {
+				this.assetMap = JSON.parse(cacheJSON);
+			} catch (err) {
+				selfdestruct();
+			}
 		}
-	}
-	
-	// Load <head> assets from cache immediately
-	this.loadFromCache();
+		
+		// Load assets from cache now *and* once the DOM is ready
+		// When inlined, the loader script is executed before the DOM is ready, so we need to wait
+		// When loaded from cache, the loader script is executed after the DOMready event fired, so the
+		// event listener never fires
+		this.loadFromCache();
+		window.addEventListener('DOMContentLoaded', this.loadFromCache.bind(this), false);
 
-	// If the loader script itself was inlined, we fetch and cache the file once the client is idle
-	// TODO: Use requestIdleCallback if available: https://caniuse.com/requestidlecallback
-	var inlinedLoader = document.querySelector('['+dataNameAttr+'='+loaderScriptName+']');
-	if (inlinedLoader) {
-		window.addEventListener('load', function(){
-			setTimeout(function(){
-				loadSelfIntoCache(inlinedLoader.attributes[dataVersionAttr].value);
-			}, 4096);
-		}, false);
-	}
+		// If the loader script itself was inlined, we store it in localStorage
+		var inlinedLoader = document.querySelector('['+dataNameAttr+'='+loaderScriptName+']');
+		if (inlinedLoader) {
+			// Store the loader script in localStorage
+			let version = inlinedLoader.getAttribute(dataVersionAttr);
+			localStorage.setItem('sbCacheLoader', JSON.stringify({
+				type: 'script',
+				version: version,
+				data: inlinedLoader.innerHTML
+			}));
+			document.cookie = 'loadercached=' + version;
+		}
+	};
 
 	return this;
 
 }(window, document, localStorage));
+
+Skybolt.init();
