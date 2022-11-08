@@ -4,6 +4,10 @@ Skybolt is a high performance front end asset loading and caching library which 
 
 In a nutshell, the Skybolt Server component will detect if a client is 'cold' and automatically inline all assets into the HTML, eliminating additional HTTP requests. The Skybolt Client component will take these inlined assets, store them in localStorage, and then serve them from there on subsequent requests.
 
+## Project Status
+
+Experimental; do not use. Most of this code was written more than half a decade ago, the PHP implementation is terribly naïve and inflexible, and the whole thing needs a rewrite.
+
 ## Getting Started
 
 1. Upload the contents of the `src/` folder to your PHP7/8 enabled web server (making sure you include the `.htaccess` file)
@@ -23,10 +27,10 @@ In a nutshell, the Skybolt Server component will detect if a client is 'cold' an
 - [ ] Skybolt as a package (NPM, Composer, PyPi?)
 - [ ] Native ESM module support
 - [ ] NPM (CommonJS) module support
-- [ ] Caching of >5MB of assets by leveraging IndexedDB
+- [ ] [Workbox](https://developer.chrome.com/docs/workbox/)-based caching (Service Workers, Cache API, Fetch API, etc.) as a modern and scalable alternative to localStorage
 - [ ] Build step to generate 'master inventory' of assets
 - [ ] Server sends cache invalidation commands to clients when cached assets are updated
-- [ ] Preloading of assets (requestIdleCallback?)
+- [ ] Preloading of assets (requestIdleCallback?), possibly [ML-powered](https://github.com/guess-js/guess)
 - [ ] Integrated CDN support
 - [ ] Integrated asset minification, CSS preprocessors, etc.
 - [ ] Support for image assets
@@ -34,7 +38,9 @@ In a nutshell, the Skybolt Server component will detect if a client is 'cold' an
 
 ## Background
 
-Skybolt was born out of web performance experiments I did around 2012-2013 together with [Morten Olsen](https://mortenolsen.pro/). I had recently led the development of Tomahawk (aka T2), a frontend framework for the [Nordic fashion community site Trendsales](https://trendsales.dk/) incorporating a number of features which were cutting edge then, but are now commonplace in modern frontend frameworks:
+Skybolt was born out of web performance experiments I did around 2012-2013 together with [Morten Olsen](https://mortenolsen.pro/). I had recently led the development of Tomahawk (aka T2), a frontend framework for the [Nordic fashion community site Trendsales](https://trendsales.dk/) based on prior work by people like [Nicholas Zakas](https://humanwhocodes.com/), [Addy Osmani](https://addyosmani.com/), and [Makinde Adeagbo](https://makinde.adeagbo.com/).
+
+T2 incorporated a number of features which were cutting edge then, but are now commonplace in modern frontend frameworks:
 
 - JavaScript modules with dependencies (imports) and a scoped public interface (exports)
 - HTML-first progressive enhancement
