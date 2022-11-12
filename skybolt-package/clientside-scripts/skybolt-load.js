@@ -105,8 +105,12 @@ var Skybolt = (function (window, document, localStorage) {
 		}
 	}
 	
-	// Load <head> assets from cache immediately
+	// Load <head> assets from cache immediately (when loaded via script tag it executes after the DOMReady event fired)
 	this.loadFromCache();
+	// And once the DOM is ready (when inlined, the immediately-executed one can't find any elements yet)
+	document.addEventListener('DOMContentLoaded', () => {
+		Skybolt.loadFromCache();
+	});
 
 	// If the loader script itself was inlined, we fetch and cache the file once the client is idle
 	// TODO: Use requestIdleCallback if available: https://caniuse.com/requestidlecallback

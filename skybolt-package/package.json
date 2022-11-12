@@ -1,0 +1,22 @@
+{
+  "name": "@jensroland/skybolt",
+  "version": "0.1.0",
+  "description": "A high performance front end asset loading and caching library",
+  "repository": "github:JensRoland/skybolt",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "minify": "terser clientside-scripts/skybolt-load.js -c -m --output clientside-scripts/min/skybolt-load.js && terser clientside-scripts/skybolt-store.js -c -m --output clientside-scripts/min/skybolt-store.js"
+  },
+  "keywords": [
+    "performance",
+    "caching"
+  ],
+  "devDependencies": {
+  },
+  "dependencies": {
+    "@node-rs/xxhash": "^1.2.1",
+    "express-session": "^1.17.3",
+    "tamper": "1.1.0"
+  }
+}

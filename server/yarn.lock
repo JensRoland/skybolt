@@ -1078,6 +1078,13 @@ simple-update-notifier@^1.0.7:
   dependencies:
     semver "~7.0.0"
 
+"skybolt@file:../skybolt-package":
+  version "0.1.0"
+  dependencies:
+    "@node-rs/xxhash" "^1.2.1"
+    express-session "^1.17.3"
+    tamper "1.1.0"
+
 source-map@~0.5.1:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
@@ -1109,6 +1116,11 @@ supports-preserve-symlinks-flag@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
+
+tamper@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/tamper/-/tamper-1.1.0.tgz#cfafe04b1f9782a46008f2f4c1fee000ce0502be"
+  integrity sha512-Qd1Zxd7PPx+NUJHwV5qlosaoi2Q2inRTmU0Jckp2GAbzzE9SRZ/3vZZOi5m5IvLP5kQf0VdGbBbISwLLOTBqqQ==
 
 to-fast-properties@^1.0.3:
   version "1.0.3"
