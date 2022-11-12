@@ -6,14 +6,15 @@ In a nutshell, the Skybolt Server component will detect if a client is 'cold' an
 
 ## Project Status
 
-Experimental; do not use. Most of this code was written more than half a decade ago, the PHP implementation is terribly naïve and inflexible, and the whole thing needs a rewrite.
+Experimental; do not use in Production. Most of this code was written more than half a decade ago and the whole thing needs a rewrite.
+
+If you are looking for production ready tools for caching assets in the browser and other high-performance tricks involving Service Workers and the Caching and Fetch APIs, check out [Workbox](https://developers.google.com/web/tools/workbox) by Google.
 
 ## Getting Started
 
-1. Upload the contents of the `src/` folder to your PHP7/8 enabled web server (making sure you include the `.htaccess` file)
-2. Edit the `src/libs/config.php` file to suit your needs (especially the `SITE_ROOT` constant)
-3. Open the URL to the source folder in your browser
-4. Take a look at the source to see how the HTML is being served, and how the assets are being inlined
+The `examples` folder contains example web applications using Skybolt. The `examples/express` folder contains a simple Express.js application, and the `examples/php-deprecated` folder contains a (deprecated) PHP implementation.
+
+For details, see the `README.md` files in the example folders.
 
 ## Features
 

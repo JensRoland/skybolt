@@ -16,7 +16,7 @@
     "memorystore": "^1.6.7",
     "morgan": "~1.9.1",
     "pug": "^2.0.4",
-    "skybolt": "file:../skybolt-package"
+    "skybolt": "file:../../src"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

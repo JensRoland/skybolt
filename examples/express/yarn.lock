@@ -1078,7 +1078,7 @@ simple-update-notifier@^1.0.7:
   dependencies:
     semver "~7.0.0"
 
-"skybolt@file:../skybolt-package":
+"skybolt@file:../../src":
   version "0.1.0"
   dependencies:
     "@node-rs/xxhash" "^1.2.1"
