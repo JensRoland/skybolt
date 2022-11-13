@@ -4,11 +4,12 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Express Example",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/server/myExpressApp/bin/www"
+            "program": "${workspaceFolder}/examples/express/bin/www",
+            "cwd": "${workspaceFolder}/examples/express",
         }
     ]
 }
