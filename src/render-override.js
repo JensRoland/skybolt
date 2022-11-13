@@ -3,14 +3,14 @@ const path = require('path');
 const { Skybolt, SkyboltAsset } = require('./skybolt.js');
 
 // Skybolt middleware to rewrite custom elements in the rendered html
-function renderOverride(express) {
+function renderOverride(express, devMode) {
   const originalRenderFunction = express.response.render;
   express.response.render = function render(view, options, callback) {
     var self = this;
     var cb = callback;
     var opts = options || {};
     var req = this.req;
-    const skybolt = new Skybolt(req.session);
+    const skybolt = new Skybolt(req.session, devMode);
     const indentRegex = /^(?!\s*$)/gm;
   
     // Support callback function as second arg
@@ -63,10 +63,10 @@ function renderOverride(express) {
           if (skybolt.clientInventoryContains({name: assetName, version: assetVersion})) {
             // If the asset is already in the client's inventory,
             // we insert a meta tag to load the cached version
-            return `${indent}<meta sb-state='load' sb-type='${assetType}' sb-name='${assetName}' sb-version='${assetVersion}'>`;
+            return `${indent}<meta sb-asset='${assetName}:${assetType}:${assetVersion}' sb-state='load'>`;
           }
           // Otherwise, we inline the asset
-          return `<${assetTag} sb-type='${assetType}' sb-name='${assetName}' sb-version='${assetVersion}' sb-state='store'>\n${assetBody.replace(indentRegex, '  ')}\n</${assetTag}>`.replace(indentRegex, indent);
+          return `<${assetTag} sb-asset='${assetName}:${assetVersion}' sb-state='store'>\n${assetBody.replace(indentRegex, '  ')}\n</${assetTag}>`.replace(indentRegex, indent);
         } catch (err) {
           console.error(err);
           return `<!-- Error: '${url}' not found -->`;

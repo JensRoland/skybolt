@@ -4,14 +4,15 @@ const { xxh32 } = require('@node-rs/xxhash')
 
 // Skybolt class
 class Skybolt {
-  constructor(session) {
+  constructor(session, devMode) {
     const workingDirectory = process.cwd();
     this.session = session;
+    this.devMode = devMode;
     this.clientInventory = session.assets || {};
     this.isColdLoad = session.assets === undefined;
 
     // We include our own (minified) assets in the master inventory
-    const skyboltScripts = this.getAssetsInFolder(path.join(__dirname, 'clientside-scripts', 'min'));
+    const skyboltScripts = this.getAssetsInFolder(path.join(__dirname, 'clientside-scripts', (devMode ? '' : 'min')));
     this.masterInventory = {
       script: Object.assign(skyboltScripts, this.getAssetsInFolder(path.join(workingDirectory, 'public', 'javascripts'))),
       style: this.getAssetsInFolder(path.join(workingDirectory, 'public', 'stylesheets')),
@@ -22,10 +23,15 @@ class Skybolt {
   // getAssetsInFolder
   // Iterates over files in a folder, hashes their contents, and returns them as {name, version (hash)} objects
   getAssetsInFolder(folderPath) {
+    console.debug(`Scanning folder ${folderPath} for assets...`);
     const assetMap = {};
     fs.readdirSync(folderPath).map((fileName) => {
       // Ignore hidden files (e.g. .gitkeep)
       if (fileName.startsWith('.')) {
+        return;
+      }
+      // Ignore folders
+      if (fs.statSync(path.join(folderPath, fileName)).isDirectory()) {
         return;
       }
       const name = fileName.split('.').slice(0, -1).join('.');
@@ -64,6 +70,7 @@ class Skybolt {
 // Skybolt Asset class
 class SkyboltAsset {
   constructor(path, type) {
+    console.debug(`New SkyboltAsset: ${path}`);
     this.path = path;
     this.type = type;
     this.name = path.split('/').pop().split('.').slice(0, -1).join('.');
@@ -76,11 +83,11 @@ class SkyboltAsset {
       'script': 'script',
       'fragment': 'div'
     }[this.type];
-    return `<${wrapperTag} sb-type='${this.type}' sb-name='${this.name}' sb-version='${this.version}'${ store ? " sb-state='store'" : ""}>${this.getContents()}</${wrapperTag}>`; 
+    return `<${wrapperTag} sb-asset='${this.name}:${this.version}'${ store ? " sb-state='store'" : ""}>${this.getContents()}</${wrapperTag}>`; 
   }
 
   asCacheReferenceHtml() {
-    return `<meta sb-type='${this.type}' sb-name='${this.name}' sb-version='${this.version}' sb-state='load'>`;
+    return `<meta sb-asset='${this.name}:${this.type}:${this.version}' sb-state='load'>`;
   }
 
   asStandardScriptTag(urlPrefix) {
@@ -107,7 +114,7 @@ class SkyboltAsset {
   }
 
   static versionHash(fileContents) {
-    return Buffer.from(xxh32(fileContents, 0).toString(16), 'hex').toString('base64');
+    return Buffer.from(xxh32(fileContents, 0).toString(16), 'hex').toString('base64').replace(/\=*/g, '');
   }
 
   static versionFromPath(filePath) {

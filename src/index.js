@@ -17,6 +17,9 @@ const assetCacheHeaders = tamper(function(req, res) {
 });
 
 function initSkybolt(express, app, options) {
+  // Development mode?
+  console.log(`App env is set to ${app.get('env')}`);
+  const devMode = app.get('env') === 'development';
   // Use sessions
   if (options['sessionConfig']) initSession(app, options['sessionConfig']);
 
@@ -27,10 +30,10 @@ function initSkybolt(express, app, options) {
   app.use(assetCacheHeaders);
 
   // Setup routing for the /assets folder
-  app.use('/assets', routerFactory(options['assetPaths']));
+  app.use('/assets', routerFactory(devMode, options['assetPaths']));
 
   // Finally, override the render function to modify the HTML
-  renderOverride(express);
+  renderOverride(express, devMode);
 }
 
 // Skybolt needs sessions to store the clients' asset inventory, as

@@ -27,6 +27,7 @@ const assetInventory = function (req, res, next) {
   }
 
   if (loaderCachedVersion) {
+    console.debug(`Client cached the loader with version: ${loaderCachedVersion}, registering it in the session...`);
     // Skybolt client has cached the loader, so we register it as cached
     if (!req.session.assets) {
       req.session.assets = {};
