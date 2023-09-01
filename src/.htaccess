@@ -1,12 +1,18 @@
 # Security basics
-Header add Content-Security-Policy "default-src 'self' 'unsafe-inline'; img-src data: 'self';"  # FIXME: if possible, use strict-dynamic and a nonce on the loader script
+<IfModule mod_headers.c>
+# FIXME: if possible, use strict-dynamic and a nonce on the loader script
+Header add Content-Security-Policy "default-src 'self' 'unsafe-inline'; img-src data: 'self';"
 Header add X-Content-Type-Options "nosniff"
 Header add X-Frame-Options "SAMEORIGIN"
 Header add X-XSS-Protection "1; mode=block"
+</IfModule>
 
 
 # Rewrite versioned script URLs
 <IfModule mod_rewrite.c>
+
+RewriteBase /
+
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

@@ -59,7 +59,7 @@ class Skybolt {
 				// Instantiates that file as an Asset
 				$asset = new Asset($path . '/' . $entry);
 				// And adds it to the asset array
-				if (substr($asset->name,0,1) != '.') {
+				if ($asset != NULL) {
 					$assetCollection[$asset->name] = $asset;
 				}
 			}

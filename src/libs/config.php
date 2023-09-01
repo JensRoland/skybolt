@@ -8,7 +8,7 @@
  */
 
 // URL path to the public Skybolt system scripts
-define('SITE_ROOT', '/skybolt2021/');
+define('SITE_ROOT', '/');
 
 // Name of the Skybolt loader script (without the '.js' extension)
 define('SKYBOLT_LOADER_NAME', 'skybolt-load');

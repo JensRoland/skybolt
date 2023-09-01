@@ -19,6 +19,12 @@ class Asset {
 
 		$info = pathinfo($path);
 		$this->name = basename($path, '.' . $info['extension']);
+
+		// If this is a hidden file or a directory, do not proceed
+		if (substr($this->name,0,1) == '.') {
+			return NULL;
+		}
+
 		$this->version = $this->fileVersion($path);
 	}
 
