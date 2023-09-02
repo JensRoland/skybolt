@@ -4,7 +4,7 @@
  * 
  * Exports: nothing, just runs the IIFE
  * 
- * Inlined assets can be cached by adding `sb-state="load"` to the tag
+ * Inlined assets can be cached by adding `sb-state="store"` to the tag
  * and the corresponding `sb-type`, `sb-name`, and `sb-version` attributes.
  * 
  * Scripts/modules:
