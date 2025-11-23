@@ -1,0 +1,23 @@
+/**
+ * Main CSS Bundle - Timber v2
+ *
+ * This replaces the old timber_css_v4 bundle
+ * Imported files will be bundled and minified by Vite
+ */
+
+/* Bootstrap Framework */
+@import '../../public/css/bootstrap-newer.css';
+
+/* Icon Library */
+@import '../../public/css/font-awesome.css';
+
+/* Navigation */
+@import '../../public/css/slicknav.css';
+
+/* Components */
+@import '../../public/css/prettyPhoto.css';
+@import '../../public/css/responsiveslides.css';
+@import '../../public/css/leaflet.css';
+
+/* Site Styles */
+@import '../../public/css/style.css';

@@ -1,0 +1,22 @@
+{
+    "name": "timber/vite-example",
+    "description": "Timber template with Skybolt v2 and Vite",
+    "type": "project",
+    "require": {
+        "php": "^8.3"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/skybolt-core"
+        }
+    ],
+    "require-dev": {
+        "skybolt/skybolt-core": "@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Timber\\": "src/"
+        }
+    }
+}

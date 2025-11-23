@@ -1,0 +1,18 @@
+# Package specific ignores
+
+
+
+
+# Composer stuff
+/composer.lock
+/vendor
+
+# OS X stuff
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Windows stuff
+Desktop.ini
+Thumbs.db
+$RECYCLE.BIN/

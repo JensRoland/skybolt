@@ -1,0 +1,20 @@
+services:
+  timber-v2:
+    build: .
+    container_name: timber-v2
+    ports:
+      - "8080:80"
+    volumes:
+      # Mount the project for live development
+      - .:/var/www/html
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+      - APACHE_LOG_DIR=/var/log/apache2
+    restart: unless-stopped
+    networks:
+      - timber-v2-network
+
+networks:
+  timber-v2-network:
+    driver: bridge

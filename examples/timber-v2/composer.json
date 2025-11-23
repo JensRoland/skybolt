@@ -1,0 +1,20 @@
+{
+    "name": "timber/v2",
+    "description": "Timber template with Skybolt v2",
+    "type": "project",
+    "require": {
+        "php": "^8.3"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/skybolt-core",
+            "options": {
+                "symlink": false
+            }
+        }
+    ],
+    "require-dev": {
+        "skybolt/skybolt-core": "@dev"
+    }
+}

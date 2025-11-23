@@ -1,0 +1,104 @@
+/*! http://responsiveslides.com v1.54 by @viljamis */
+
+.rslides {
+    position: relative;
+    list-style: none;
+    overflow: hidden;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.rslides li {
+    -webkit-backface-visibility: hidden;
+    position: absolute;
+    display: none;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+
+.rslides li:first-child {
+    position: relative;
+    display: block;
+    float: left;
+}
+
+.rslides img {
+    display: block;
+    height: auto;
+    float: left;
+    width: 100%;
+    border: 0;
+}
+
+
+
+
+
+
+
+
+.rslidesWrapper {
+    display: block;
+    width: 100%;
+    height: 490px;
+    margin-bottom: 0 !important;
+    margin-top: 10px;
+}
+
+.rslides {
+    margin-top: 70px;
+    margin-left: -20px;
+}
+
+.rslides .slideContent {
+    padding: 10px 20px;
+}
+
+.rslides h2 {
+    display: inline-block;
+    color: #fff;
+    border-bottom: 4px solid #1fcdff;
+    font-family: 'Open Sans',sans-serif;
+    font-size: 100px;
+    font-weight: 700;
+    letter-spacing: -2px;
+}
+
+#rslidesControl {
+    list-style: none;
+    margin: 0;
+    margin-top: 107px;
+    padding: 0;
+    text-align: left;
+}
+
+#rslidesControl > li {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    height: 10px;
+    margin: 30px 5px;
+    position: relative;
+    width: 10px;
+    background: #b7b7b7;
+    text-align: left;
+}
+
+#rslidesControl > li > a {
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+    text-indent: -9999px;
+}
+#rslidesControl > li.rslides_here {
+    background: #fff;
+}
+
+
+
+
+

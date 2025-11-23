@@ -1,66 +1,277 @@
 # Skybolt
 
-Skybolt is a high performance front end asset loading and caching library which jumps through significant hoops to make sure your assets are loaded as fast as possible, and always with a Lighthouse / Page Speed score of 100.
+High-performance asset management framework with intelligent client-side caching for modern web applications.
 
-In a nutshell, the Skybolt Server component will detect if a client is 'cold' and automatically inline all assets into the HTML, eliminating additional HTTP requests. The Skybolt Client component will take these inlined assets, store them in localStorage, and then serve them from there on subsequent requests.
+**Version:** 2.0.0 | **Status:** ✅ Production Ready | **License:** MIT
 
-## Project Status
+## Overview
 
-Experimental; do not use. Most of this code was written more than half a decade ago, the PHP implementation is terribly naïve and inflexible, and the whole thing needs a rewrite.
+Skybolt is a two-part asset management system that dramatically improves web performance by intelligently caching assets in the client's browser localStorage. On repeat visits, assets load in milliseconds with zero HTTP requests.
 
-## Getting Started
+### Key Features
 
-1. Upload the contents of the `src/` folder to your PHP7/8 enabled web server (making sure you include the `.htaccess` file)
-2. Edit the `src/libs/config.php` file to suit your needs (especially the `SITE_ROOT` constant)
-3. Open the URL to the source folder in your browser
-4. Take a look at the source to see how the HTML is being served, and how the assets are being inlined
+- 🚀 **Vite Integration** - Modern build pipeline with instant HMR
+- 💾 **Smart Caching** - localStorage-based caching with automatic invalidation
+- ⚡ **Critical CSS** - Automatic inlining for optimal First Contentful Paint
+- 🎯 **Asset Versioning** - Manifest-based versioning with content hashing
+- 🌐 **CDN Ready** - Built-in CDN support with configurable URLs
+- 🔌 **Framework Agnostic** - Works with any PHP framework or vanilla PHP (support for other languages planned)
+- 📝 **ES Modules** - Modern JavaScript with no legacy compatibility shims
 
-## Features
+## Quick Start
 
-- [X] Supports all major browsers
-- [X] Caching of scripts, styles, and HTML fragments (both inline and external assets)
-- [X] Hash-based asset versioning (using [XXH3](https://github.com/Cyan4973/xxHash) when available, or MD5 as a good-enough fallback)
-- [X] [AMD named module](https://en.wikipedia.org/wiki/Asynchronous_module_definition) support (customized for versioning): module definition, parallel loading, dependency resolution
-- [X] Dynamic imports
-- [X] Code splitting
-- [X] Automatic inlining of assets for performance - all the benefits of bundling without actually bundling anything
-- [ ] Skybolt as a package (NPM, Composer, PyPi?)
-- [ ] Native ESM module support
-- [ ] NPM (CommonJS) module support
-- [ ] [Workbox](https://developer.chrome.com/docs/workbox/)-based caching (Service Workers, Cache API, Fetch API, etc.) as a modern and scalable alternative to localStorage
-- [ ] Build step to generate 'master inventory' of assets
-- [ ] Server sends cache invalidation commands to clients when cached assets are updated
-- [ ] Preloading of assets (requestIdleCallback?), possibly [ML-powered](https://github.com/guess-js/guess)
-- [ ] Integrated CDN support
-- [ ] Integrated asset minification, CSS preprocessors, etc.
-- [ ] Support for image assets
-- [ ] Graceful handling of cookie size overflows
+### Installation
 
-## Background
+```bash
+composer require skybolt/skybolt-core
+```
 
-Skybolt was born out of web performance experiments I did around 2012-2013 together with [Morten Olsen](https://mortenolsen.pro/). I had recently led the development of Tomahawk (aka T2), a frontend framework for the [Nordic fashion community site Trendsales](https://trendsales.dk/) based on prior work by people like [Nicholas Zakas](https://humanwhocodes.com/), [Addy Osmani](https://addyosmani.com/), and [Makinde Adeagbo](https://makinde.adeagbo.com/).
+### Basic Usage
 
-T2 incorporated a number of features which were cutting edge then, but are now commonplace in modern frontend frameworks:
+```php
+<?php
+use Skybolt\Skybolt;
 
-- JavaScript modules with dependencies (imports) and a scoped public interface (exports)
-- HTML-first progressive enhancement
-- Parallel async loading of dependencies
-- No Virtual DOM (it wasn't invented yet)
-- Multi-Page App with some client-side routing features
-- Interactive modules loaded on otherwise static pages with similar benefits to the modern 'Islands' architecture
-- Module decoupling with a custom pub/sub event bus
-- Dynamic imports
-- Code splitting and common chunks
-- Server scripts could issue DOM changes with a choice of server-side rendering or client-side rendering
-- HTML syntax enhancements allowing dynamic application features without any JavaScript code, similar to [htmx](https://htmx.org/)
-- CSS preprocessing
-- Minification of JS and CSS, compression of images
-- Lazyloading of modules
-- No 'hydration' but T2 used a clever event delegation method based on Facebooks 'Primer', allowing us to be interactive by the time the DOM was ready, before the modules were even downloaded
-- Polyfills as modules, conditionally loaded only in browsers which need them
-- Page Speed and YSlow scores consistently around 96-100 points
-- Internationalization with i18n 'bundles' as meta-modules
-- Blazingly-fast (precompiled) HTML templating
-- Error handling and pragmatic (structured) logging to a central server
+session_start();
 
-Other modern features like scoped CSS, data binding, and single-file components were not on our radar if indeed they existed in 2012, so they were never implemented in T2.
+$skybolt = new Skybolt(
+    manifestPath: __DIR__ . '/dist/.vite/manifest.json',
+    basePath: '/assets/',
+    session: $_SESSION
+);
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <?= $skybolt->css('src/css/critical.css', inline: 'always') ?>
+    <?= $skybolt->launchScript() ?>
+    <?= $skybolt->css('src/css/main.css') ?>
+</head>
+<body>
+    <h1>Hello Skybolt!</h1>
+    <?= $skybolt->script('src/js/app.js') ?>
+</body>
+</html>
+```
+
+### Vite Configuration
+
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  build: {
+    manifest: true,
+    rollupOptions: {
+      input: {
+        critical: 'src/css/critical.css',
+        main: 'src/css/main.css',
+        app: 'src/js/app.js'
+      }
+    }
+  }
+})
+```
+
+## How It Works
+
+### First Visit
+1. Client requests page
+2. Server checks session (empty - new user)
+3. Server inlines all assets in HTML
+4. Client stores assets in localStorage
+5. Client reports inventory to server
+
+### Repeat Visit
+
+1. Client requests page (sends cached asset versions)
+2. Server checks session (has inventory)
+3. Server sends `<meta>` tags instead of full assets
+4. Client loads assets from localStorage in ~40ms
+5. **Zero HTTP requests for CSS/JS**
+
+### After Asset Update
+
+1. Developer runs `bun run build`
+2. Vite generates new version hashes
+3. Client requests page
+4. Server detects version mismatch
+5. Server inlines updated assets
+6. **Cache automatically invalidated**
+
+## Repository Structure
+
+```text
+skybolt/
+├── packages/
+│   └── skybolt-core/              # Composer package (distributable)
+│       ├── src/                   # PHP source files
+│       ├── assets/                # Client-side JavaScript
+│       ├── composer.json
+│       ├── README.md
+│       ├── ARCHITECTURE.md
+│       └── CHANGELOG.md
+│
+├── examples/
+│   ├── timber-v2/                 # Full working example
+│   └── minimal-example/           # Minimal setup
+│
+└── CLAUDE.md                      # AI assistant context
+```
+
+## Examples
+
+### Full Working Example
+
+See [`examples/timber-v2/`](examples/timber-v2/) for a complete implementation with:
+
+- Vite build pipeline
+- Critical CSS extraction
+- Font loading optimization
+- Image lazy loading
+- Legacy jQuery plugins
+
+This example is intentionally using a commercial template based on oldschool vanilla JavaScript to demonstrate Skybolt's compatibility with arbitrary JS/CSS, with no dependency on a particular JS framework.
+
+```bash
+cd examples/timber-v2
+composer install && bun install
+bun run build
+make serve  # Visit http://localhost:8080
+```
+
+### Minimal Example
+
+See [`examples/minimal-example/`](examples/minimal-example/) for the simplest possible setup.
+
+## Documentation
+
+- **[Architecture](packages/skybolt-core/ARCHITECTURE.md)** - Internal architecture and design decisions
+- **[Package README](packages/skybolt-core/README.md)** - Package-specific documentation
+
+## Configuration Options
+
+```php
+$skybolt = new Skybolt(
+    manifestPath: '/path/to/.vite/manifest.json',  // Required
+    basePath: '/assets/',                          // Default: '/assets/'
+    session: $_SESSION,                            // Required for caching
+    cdnUrl: 'https://cdn.example.com',             // Optional
+    devServer: 'http://localhost:5173',            // Optional (auto-detected)
+    printComments: true,                           // Debug mode
+    inlineThreshold: 14336                         // 14KB threshold
+);
+```
+
+## API Reference
+
+### Core Methods
+
+- `css(string $entry, ?string $inline = null, bool $async = true): string`
+  - Load CSS with flexible options
+  - `inline: 'always'` - Force inline (critical CSS)
+  - `inline: 'never'` - Force external (no localStorage)
+  - `inline: null` - Auto (default, uses localStorage cache)
+  - `async: false` - Blocking `<link>` tag
+
+- `script(string $entry, bool $async = true, bool $module = true): string`
+  - Load JavaScript with flexible options
+  - `async: false` - Blocking script tag
+  - `module: false` - Non-module script (for legacy code)
+
+- `preload(string $entry, string $as, ?string $fetchpriority = null, ?string $type = null): string`
+  - Generate preload hints for critical resources
+  - Example: `$skybolt->preload('images/hero.jpg', as: 'image', fetchpriority: 'high')`
+
+- `launchScript(): string`
+  - Render Skybolt client controller (call once in `<head>`)
+
+### Advanced Methods
+
+- `getAssetUrl(string $entry): ?string` - Get full URL for an asset
+- `handleInventoryUpdate(?array $versions): void` - Process cache inventory update
+
+## Browser Support
+
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+
+**Requirements:**
+
+- ES Modules support
+- localStorage support
+- Fetch API
+
+**NO IE support** (ES Modules required)
+
+## Performance Tips
+
+1. **Keep Critical CSS Minimal** - Only include above-the-fold styles (<14KB)
+2. **Use Async Loading** - Defer non-critical assets with `css()` and `script()` (async by default)
+3. **Preload Critical Resources** - Use `preload()` for hero images and critical fonts
+4. **Enable CDN** - Set `cdnUrl` for production deployments
+5. **Long Cache Headers** - Vite's version hashes enable safe year-long caching
+
+## Development
+
+### Running Tests
+
+```bash
+cd packages/skybolt-core
+composer test
+```
+
+### Building for Production
+
+```bash
+cd examples/timber-v2
+bun run build
+```
+
+### Debug Mode
+
+```php
+$skybolt = new Skybolt(
+    // ...
+    printComments: true  // Enable HTML comments showing cache decisions
+);
+```
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for detailed future plans including:
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests (when available)
+5. Submit a pull request
+
+## Credits
+
+**Original Concept:** Jens Roland & Morten Olsen (2012-2013)
+
+Inspired by:
+
+- [Paul Irish](https://paulirish.com/) - Initial concept of localStorage caching
+- [Steve Souders](https://stevesouders.com/) - Web performance best practices
+- [Nicholas Zakas](https://humanwhocodes.com/) - Module patterns
+- [Addy Osmani](https://addyosmani.com/) - Performance optimization
+- [Makinde Adeagbo](https://makinde.adeagbo.com/) - Performance optimization
+
+## License
+
+MIT License - see [LICENSE](packages/skybolt-core/LICENSE)
+
+## Related Projects
+
+- [Vite](https://vitejs.dev/) - Next generation frontend tooling
+- [Workbox](https://developer.chrome.com/docs/workbox/) - Service Worker libraries
+
+---
+
+**Need Help?** Check the [examples](examples/) or open an issue on GitHub.
