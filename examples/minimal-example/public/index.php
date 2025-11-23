@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Timber + Vite + Skybolt v2 Example
+ * Minimal Example of Skybolt
  *
  * This demonstrates how to integrate Skybolt with a Vite build
  */
@@ -29,8 +29,8 @@ $skybolt = new Skybolt(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="High-performance web template powered by Skybolt v2 and Vite">
-    <title>Timber - Skybolt v2 + Vite Demo</title>
+    <meta name="description" content="High-performance web demo powered by Skybolt">
+    <title>Minimal Example - Skybolt Demo</title>
 
     <?php // Critical CSS - inlined for immediate First Contentful Paint ?>
     <?= $skybolt->css('src/css/critical.css', inline: 'always') ?>
@@ -44,8 +44,8 @@ $skybolt = new Skybolt(
 <body>
     <header>
         <div class="container">
-            <h1>Timber v2.0</h1>
-            <p>Powered by Skybolt + Vite</p>
+            <h1>Minimal example page</h1>
+            <p>Powered by Skybolt</p>
         </div>
     </header>
 
@@ -148,7 +148,7 @@ $skybolt = new Skybolt(
 
     <footer>
         <div class="container">
-            <p>&copy; <?= date('Y') ?> Timber Template - Powered by Skybolt v2</p>
+            <p>&copy; <?= date('Y') ?> Minimal Example - Powered by Skybolt</p>
             <p>Open the browser console to see performance metrics</p>
         </div>
     </footer>

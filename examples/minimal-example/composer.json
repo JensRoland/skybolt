@@ -1,6 +1,6 @@
 {
-    "name": "timber/vite-example",
-    "description": "Timber template with Skybolt v2 and Vite",
+    "name": "skybolt/minimal-example",
+    "description": "Minimal example with Skybolt",
     "type": "project",
     "require": {
         "php": "^8.3"
@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Timber\\": "src/"
+            "MinimalExample\\": "src/"
         }
     }
 }

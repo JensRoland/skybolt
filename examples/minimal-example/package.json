@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Timber template modernized with Vite and Skybolt v2",
+  "description": "Minimal example with Skybolt",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

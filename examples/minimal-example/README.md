@@ -38,8 +38,8 @@ Then visit: http://localhost:8000
 
 ## Project Structure
 
-```
-timber-vite/
+```text
+minimal-example/
 ├── src/
 │   ├── css/
 │   │   ├── critical.css    # Above-the-fold CSS (inlined)

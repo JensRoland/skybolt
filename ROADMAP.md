@@ -31,7 +31,7 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [ ] **Developer Experience** - Better encapsulation and interfaces for easy integration and deployment alongside existing applications
 - [ ] **Simplified HTML meta syntax** - maybe `sb-load-script="boot:Fhwa4p"` and `sb-load-style="default:FFJg-n"` and `sb-load-fragment="header:PgpDxo"`
-- [ ] **Sessionless Caching** - Support for caching without session inventory
+- [ ] **Sessionless Caching** - Support for caching without session inventory since most 'modern' web devs are afraid of sessions, and we won't convince anyone to configure DB-backed sessions just for Skybolt. The session inventory was really just a half-baked attempt at working around the 4KB cookie limit (and not be so wasteful with cookie headers), but I was still using the cookie... to get around the cookie limit I could just use multiple cookies if needed. Could also use a better data packing method than JSON.
 - [ ] **Composer Package** - Publish to Packagist for easy installation
 
 ## Version 2.2 (Planned) 📦
