@@ -1,77 +1,47 @@
 # Skybolt
 
-High-performance asset management framework with intelligent client-side caching for modern web applications.
+High-performance asset caching for multi-page applications.
 
-**Version:** 2.0.0 | **Status:** ✅ Production Ready | **License:** MIT
+**Version:** 3.0.0 | **Status:** Beta | **License:** MIT
 
-## Overview
+## What is Skybolt?
 
-Skybolt is a two-part asset management system that dramatically improves web performance by intelligently caching assets using Service Workers and the Cache API. On repeat visits, assets load in milliseconds with zero HTTP requests.
+Skybolt eliminates HTTP requests for cached assets on repeat visits. By combining Service Workers with intelligent server-side rendering, assets load from cache in ~1ms with zero network overhead.
 
-### Key Features
+### How It Works
 
-- 🚀 **Vite Integration** - Modern build pipeline with instant HMR
-- 💾 **Service Worker Caching** - Unlimited cache storage via Cache API with automatic invalidation
-- ⚡ **Critical CSS** - Automatic inlining for optimal First Contentful Paint
-- 🎯 **Asset Versioning** - Manifest-based versioning with content hashing
-- 🌐 **CDN Ready** - Built-in CDN support with configurable URLs
-- 🔌 **Framework Agnostic** - Works with any PHP framework or vanilla PHP (support for other languages planned)
-- 📝 **ES Modules** - Modern JavaScript with no legacy compatibility shims
+**First Visit:**
+
+1. Server inlines CSS/JS directly in the HTML (with special attributes)
+2. Service Worker registers and caches the inlined content
+3. Cookie records which asset versions are cached
+
+**Repeat Visit:**
+
+1. Server reads cookie, sees assets are cached
+2. Server sends regular `<link>` and `<script>` tags
+3. Service Worker intercepts requests, serves from Cache API
+4. **Zero network requests for CSS/JS**
+
+**After Rebuild:**
+
+1. Vite generates new content hashes
+2. Server detects version mismatch via cookie
+3. Server inlines updated assets
+4. Cache automatically invalidated
 
 ## Quick Start
 
-### Installation
+### 1. Install Vite Plugin
 
 ```bash
-composer require skybolt/skybolt-core
+npm install @skybolt/vite-plugin
 ```
-
-### Service Worker Setup
-
-Create a PHP endpoint to serve the Service Worker:
-
-```php
-<?php
-// public/skybolt-sw.php
-require_once __DIR__ . '/../vendor/autoload.php';
-
-use Skybolt\ServiceWorkerEndpoint;
-
-ServiceWorkerEndpoint::serve();
-```
-
-This one-time setup file serves the Service Worker from the vendor package and automatically updates when you update Skybolt.
-
-### Basic Usage
-
-```php
-<?php
-use Skybolt\Skybolt;
-
-$skybolt = new Skybolt(
-    manifestPath: __DIR__ . '/dist/.vite/manifest.json',
-    basePath: '/assets/'
-);
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <?= $skybolt->css('src/css/critical.css') ?>
-    <?= $skybolt->launchScript() ?>
-    <?= $skybolt->css('src/css/main.css') ?>
-</head>
-<body>
-    <h1>Hello Skybolt!</h1>
-    <?= $skybolt->script('src/js/app.js') ?>
-</body>
-</html>
-```
-
-### Vite Configuration
 
 ```javascript
 // vite.config.js
 import { defineConfig } from 'vite'
+import { skybolt } from '@skybolt/vite-plugin'
 
 export default defineConfig({
   build: {
@@ -83,225 +53,171 @@ export default defineConfig({
         app: 'src/js/app.js'
       }
     }
-  }
+  },
+  plugins: [skybolt()]
 })
 ```
 
-## How It Works
+### 2. Install Server Adapter
 
-### First Visit
+**PHP:**
 
-1. Client requests page
-2. Server checks cookie (empty - new user)
-3. Server inlines small assets in HTML with `data-sb-cache` attributes
-4. Service Worker installs and activates
-5. Client extracts inlined assets and caches them directly to Cache API
-6. Client stores asset versions in cookie
-
-### Repeat Visit (Cached)
-
-1. Client requests page (sends cached asset versions)
-2. Server checks cookie (has asset versions)
-3. Server sends standard `<link>`/`<script>` tags
-4. Service Worker intercepts requests and serves from Cache API in ~1ms
-5. **Zero network requests for CSS/JS**
-
-### After Asset Update
-
-1. Developer runs `bun run build`
-2. Vite generates new version hashes
-3. Client requests page
-4. Server detects version mismatch via cookie
-5. Server inlines updated assets
-6. Client updates Cache API and cookie
-7. **Cache automatically invalidated**
-
-## Repository Structure
-
-```text
-skybolt/
-├── packages/
-│   └── skybolt-core/              # Composer package (distributable)
-│       ├── src/                   # PHP source files
-│       ├── assets/                # Client-side JavaScript
-│       ├── composer.json
-│       ├── README.md
-│       └── ARCHITECTURE.md
-│
-├── examples/
-│   ├── timber-v2/                 # Full working example
-│   └── minimal-example/           # Minimal setup
-│
-└── CLAUDE.md                      # AI assistant context
+```bash
+composer require skybolt/skybolt
 ```
+
+```php
+<?php
+$sb = new Skybolt\Skybolt(__DIR__ . '/dist/.skybolt/render-map.json');
+?>
+<head>
+    <?= $sb->css('src/css/critical.css') ?>
+    <?= $sb->launchScript() ?>
+    <?= $sb->css('src/css/main.css') ?>
+</head>
+<body>
+    <?= $sb->script('src/js/app.js') ?>
+</body>
+```
+
+### 3. Build and Run
+
+```bash
+npm run build
+php -S localhost:8080 -t public
+```
+
+### 4. Serve the Service Worker
+
+Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
+
+## Packages
+
+| Package | Description | Install |
+|---------|-------------|---------|
+| [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin` |
+| [skybolt/skybolt](packages/php/) | PHP adapter | `composer require skybolt/skybolt` |
+
+### Coming Soon
+
+- **Ruby** - `gem install skybolt`
+- **Python** - `pip install skybolt`
+- **Go** - `go get github.com/skybolt/skybolt-go`
 
 ## Examples
 
-### Full Working Example
+- [Minimal Example](examples/minimal/) - Basic PHP setup
 
-See [`examples/timber-v2/`](examples/timber-v2/) for a complete implementation with:
+## Architecture
 
-- Vite build pipeline
-- Critical CSS extraction
-- Font loading optimization
-- Image lazy loading
-- Legacy jQuery plugins
-
-This example is intentionally using a commercial template based on oldschool vanilla JavaScript to demonstrate Skybolt's compatibility with arbitrary JS/CSS, with no dependency on a particular JS framework.
-
-```bash
-cd examples/timber-v2
-composer install && bun install
-bun run build
-make serve  # Visit http://localhost:8080
-```
-
-### Minimal Example
-
-See [`examples/minimal-example/`](examples/minimal-example/) for the simplest possible setup.
-
-## Documentation
-
-- **[Architecture](packages/skybolt-core/ARCHITECTURE.md)** - Internal architecture and design decisions
-- **[Package README](packages/skybolt-core/README.md)** - Package-specific documentation
-
-## Configuration Options
-
-```php
-$skybolt = new Skybolt(
-    manifestPath: '/path/to/.vite/manifest.json',  // Required
-    basePath: '/assets/',                          // Default: '/assets/'
-    cdnUrl: 'https://cdn.example.com',             // Optional
-    devServer: 'http://localhost:5173',            // Optional (auto-detected)
-    printComments: true,                           // Debug mode
-    inlineThreshold: 14336                         // 14KB threshold
-);
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    BUILD TIME (Vite)                        │
+├─────────────────────────────────────────────────────────────┤
+│  @skybolt/vite-plugin                                       │
+│  • Reads Vite manifest                                      │
+│  • Reads asset contents                                     │
+│  • Generates render-map.json                                │
+│  • Copies skybolt-sw.js                                     │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+              dist/.skybolt/render-map.json
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    RUNTIME (Server)                         │
+├─────────────────────────────────────────────────────────────┤
+│  Server adapter (PHP/Ruby/Python/etc)                       │
+│  • Loads render-map.json                                    │
+│  • Reads sb_assets cookie                                   │
+│  • Returns inline or external tags                          │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    BROWSER                                  │
+├─────────────────────────────────────────────────────────────┤
+│  skybolt-client.js (inlined)                                │
+│  • Registers Service Worker                                 │
+│  • Caches inlined assets                                    │
+│  • Updates cookie with versions                             │
+│                                                             │
+│  skybolt-sw.js (Service Worker)                             │
+│  • Intercepts asset requests                                │
+│  • Serves from Cache API (~1ms)                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## API Reference
 
-### Core Methods
+### Vite Plugin
 
-- `css(string $entry, bool $async = true): string`
-  - Load CSS with auto-optimization
-  - Automatically inlines small files (≤50KB by default) on first visit
-  - Uses Service Worker cache for subsequent visits
-  - `async: false` - Blocking `<link>` tag (rare)
+```javascript
+import { skybolt } from '@skybolt/vite-plugin'
 
-- `script(string $entry, bool $async = true, bool $module = true): string`
-  - Load JavaScript with flexible options
-  - `async: false` - Blocking script tag
-  - `module: false` - Non-module script (for legacy code)
+skybolt({
+  outDir: '.skybolt',        // Output directory for render-map.json
+  swPath: '/skybolt-sw.js',  // URL path for Service Worker
+  debug: false               // Enable debug logging
+})
+```
 
-- `preload(string $entry, string $as, ?string $fetchpriority = null, ?string $type = null): string`
-  - Generate preload hints for critical resources
-  - Example: `$skybolt->preload('images/hero.jpg', as: 'image', fetchpriority: 'high')`
+### PHP Adapter
 
-- `launchScript(): string`
-  - Render Skybolt client controller (call once in `<head>`)
+```php
+$sb = new Skybolt\Skybolt($renderMapPath);
 
-### Advanced Methods
+// Render CSS
+$sb->css('src/css/main.css');
 
-- `getAssetUrl(string $entry): ?string` - Get full URL for an asset
-- `handleInventoryUpdate(?array $versions): void` - Process cache inventory update
+// Render JavaScript
+$sb->script('src/js/app.js');
+$sb->script('src/js/legacy.js', module: false);
+
+// Render client launcher (call once in <head>)
+$sb->launchScript();
+
+// Get asset URL (manual use)
+$sb->getAssetUrl('src/css/main.css');
+```
 
 ## Browser Support
 
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
+- Chrome/Edge 60+
+- Firefox 55+
+- Safari 11.1+
 
-**Requirements:**
+Requires Service Worker and Cache API. Falls back gracefully to standard external assets when unavailable.
 
-- ES Modules support
-- Service Worker support
-- Cache API support
-- Fetch API
+## Debugging
 
-**NO IE support** (ES Modules and Service Workers required)
-
-**Graceful degradation:** If Service Workers are not available, Skybolt falls back to standard external asset loading.
-
-## Performance Tips
-
-1. **Keep Critical CSS Minimal** - Only include above-the-fold styles (<14KB)
-2. **Use Async Loading** - Defer non-critical assets with `css()` and `script()` (async by default)
-3. **Preload Critical Resources** - Use `preload()` for hero images and critical fonts
-4. **Enable CDN** - Set `cdnUrl` for production deployments
-5. **Long Cache Headers** - Vite's version hashes enable safe year-long caching
-
-## Development
-
-### Running Tests
-
-```bash
-cd packages/skybolt-core
-composer test
-```
-
-### Building for Production
-
-```bash
-cd examples/timber-v2
-bun run build
-```
-
-### Debug Mode
-
-```php
-$skybolt = new Skybolt(
-    // ...
-    printComments: true  // Enable HTML comments showing cache decisions
-);
-```
-
-Inspect the Service Worker cache in DevTools:
+Browser console:
 
 ```javascript
-// Browser console
-console.log(await caches.keys());  // List cache names
-const cache = await caches.open('skybolt-assets-v1');
-console.log(await cache.keys());    // List cached URLs
+// Cache info
+await skybolt.getCacheInfo()
 
-// Or use the global skybolt object
-window.skybolt.clearCache();        // Clear cache without unregistering SW
-window.skybolt.selfDestruct();      // Full reset: clear cache + unregister SW + reload
+// Clear cache (keeps SW)
+await skybolt.clearCache()
+
+// Full reset
+await skybolt.selfDestruct()
 ```
 
-## Roadmap
+Query parameters:
 
-See [ROADMAP.md](ROADMAP.md) for detailed future plans including:
+- `?no-sw` - Disable Service Worker (for testing)
 
-## Contributing
+## Requirements
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests (when available)
-5. Submit a pull request
+- **Build:** Vite 5.0+ or 6.0+
+- **PHP:** 8.1+
+- **Browser:** Service Worker support
+
+## License
+
+MIT
 
 ## Credits
 
 **Original Concept:** Jens Roland & Morten Olsen (2012-2013)
 
-Inspired by:
-
-- [Paul Irish](https://paulirish.com/) - Initial concept of client-side asset caching
-- [Steve Souders](https://stevesouders.com/) - Web performance best practices
-- [Nicholas Zakas](https://humanwhocodes.com/) - Module patterns
-- [Addy Osmani](https://addyosmani.com/) - Performance optimization
-- [Makinde Adeagbo](https://makinde.adeagbo.com/) - Performance optimization
-
-## License
-
-MIT License - see [LICENSE](packages/skybolt-core/LICENSE)
-
-## Related Projects
-
-- [Vite](https://vitejs.dev/) - Next generation frontend tooling
-- [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) - MDN documentation
-- [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache) - MDN documentation
-
----
-
-**Need Help?** Check the [examples](examples/) or open an issue on GitHub.
+Inspired by performance research from Paul Irish, Steve Souders, Addy Osmani, and others.

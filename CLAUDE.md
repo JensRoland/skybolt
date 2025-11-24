@@ -1,364 +1,256 @@
 # CLAUDE.md - Skybolt Project Context
 
-This document provides context for AI assistants working on the Skybolt project across multiple conversation sessions.
+This document provides context for AI assistants working on the Skybolt project.
 
 ## Project Overview
 
-**Skybolt** is a high-performance asset management framework with intelligent client-side caching. The project is currently in the process of transitioning from legacy runtime minification to modern Vite-based build pipeline with PHP 8.3+ and Service Workers.
+**Skybolt** is a high-performance asset caching library for multi-page applications. It eliminates HTTP requests for cached assets on repeat visits by combining Service Workers with intelligent server-side rendering.
 
-### Project Goals
+### Key Architecture (v3)
 
-1. **Separate concerns**: Decouple Vite/JS tooling (language-agnostic) from PHP implementation (site-specific)
-2. **Create distributable packages**:
-   - PHP: Composer package (`skybolt/skybolt-core`)
-   - JavaScript: NPM package (planned)
-   - Python: PyPI package (future)
-3. **Do not maintain backward compatibility**: Noone is using v1 in production; a clean break allows for modern architecture
-4. **Modern stack**: PHP 8.3+, Vite, ES Modules, Lightning CSS
+Skybolt v3 uses a **build-time render map** approach:
+
+1. **Vite Plugin** (`@skybolt/vite-plugin`) generates `render-map.json` at build time
+2. **Server Adapters** (PHP, Ruby, Python, etc.) read the render map and output HTML
+3. **Client Script** caches inlined assets and manages Service Worker
+4. **Service Worker** serves cached assets with ~1ms response time
+
+This architecture enables trivial multi-language support - adapters are ~50-80 lines of code.
 
 ## Repository Structure
 
 ```text
-timber/0.4.0/
+skybolt/
 ├── packages/
-│   └── skybolt-core/              # Main PHP package (distributable)
-│       ├── src/
-│       │   ├── Skybolt.php        # Main API facade
-│       │   ├── Config.php         # Immutable configuration
-│       │   ├── ManifestReader.php # Vite manifest parser
-│       │   ├── CacheManager.php   # Cookie-based cache tracking
-│       │   └── AssetRenderer.php  # HTML tag generation
-│       ├── assets/
-│       │   └── skybolt-client.js  # Client-side ES module
-│       ├── composer.json          # Package definition
-│       ├── README.md              # Package documentation
-│       ├── ARCHITECTURE.md        # Internal architecture docs
-│       └── CHANGELOG.md           # Version history
+│   ├── vite-plugin/           # @skybolt/vite-plugin (NPM)
+│   │   ├── index.js           # Main plugin
+│   │   ├── client.js          # Client script source
+│   │   ├── sw.js              # Service Worker source
+│   │   └── package.json
+│   │
+│   └── php/                   # skybolt/skybolt (Composer)
+│       ├── src/Skybolt.php    # ~170 lines
+│       └── composer.json
 │
 ├── examples/
-│   ├── timber-v2/                 # Complete working example (Timber template)
-│   │   ├── public/
-│   │   │   └── index.php          # Demo portfolio site using Skybolt
-│   │   ├── src/
-│   │   │   ├── css/               # CSS source files
-│   │   │   └── js/                # JS source files
-│   │   ├── dist/                  # Vite build output
-│   │   ├── vite.config.js         # Vite configuration
-│   │   ├── package.json           # Node dependencies
-│   │   └── composer.json          # PHP dependencies
-│   │
-│   └── minimal-example/           # Minimal setup example
+│   └── minimal/               # Minimal PHP example
 │
-├── README.md                      # User-facing documentation
-├── ROADMAP.md                     # Future plans and feature roadmap
-└── CLAUDE.md                      # AI assistant context (this file)
+├── v2-legacy/                 # Old v2 code (for reference)
+│
+├── README.md
+└── CLAUDE.md                  # This file
 ```
 
-## Current Status (November 2025)
+## How It Works
 
-### ✅ Completed
+### Build Time
 
-- [x] Skybolt core PHP package (`packages/skybolt-core/`)
-- [x] Vite integration with manifest-based asset discovery
-- [x] ES Module client-side JavaScript (`skybolt-client.js`)
-- [x] Full working example with Timber template (`examples/timber-v2/`)
-- [x] Comprehensive documentation (README, ARCHITECTURE, MIGRATION, CHANGELOG)
-- [x] PHP 8.3 modern features (readonly properties, constructor promotion, typed everything)
-- [x] CDN support with configurable URLs
-- [x] Dev server detection for Vite HMR
-- [x] Self-contained examples with all assets (no root folder dependencies)
-- [x] Consolidated documentation (single main README.md)
+1. Developer runs `npm run build`
+2. Vite builds assets with content hashes
+3. Skybolt plugin reads Vite manifest
+4. Plugin generates `dist/.skybolt/render-map.json` containing:
+   - Asset URLs and hashes
+   - Full asset content (for inlining)
+   - Client script (minified)
+5. Plugin copies `skybolt-sw.js` to dist
 
-### 🚧 In Progress
+### First Visit
 
-- [ ] Preparing for package distribution (Packagist for Composer)
-- [ ] Creating minimal-example documentation
-- [ ] Writing comprehensive tests (PHPUnit)
+1. Server loads render-map.json
+2. Server checks `sb_assets` cookie (empty)
+3. Server inlines assets with `data-sb-cache` attributes
+4. Browser receives HTML with inlined CSS/JS
+5. Client script registers Service Worker
+6. Client extracts inlined content → Cache API
+7. Client writes asset versions to cookie
 
-### 📋 Planned
+### Repeat Visit
 
-See [ROADMAP.md](ROADMAP.md) for detailed future plans.
+1. Server loads render-map.json
+2. Server reads `sb_assets` cookie
+3. Server compares versions (match!)
+4. Server outputs `<link>` and `<script>` tags
+5. Browser requests assets
+6. Service Worker intercepts → serves from cache (~1ms)
+7. **Zero network requests**
 
-## Key Technical Concepts
+### After Rebuild
 
-### Architecture Overview
+1. New build generates new hashes
+2. Server detects version mismatch
+3. Server inlines updated assets
+4. Client updates Cache API and cookie
+5. **Automatic invalidation**
 
-Skybolt is a **two-part system**:
+## Key Design Decisions
 
-1. **Server-side (PHP)**: Coordinates cache state, renders optimized HTML
-2. **Client-side (JavaScript)**: Manages localStorage, loads cached assets
+### Build-time vs Runtime
 
-### Core Components
+v2 parsed Vite manifest at runtime. v3 generates a render map at build time because:
 
-| Component      | File                 | Purpose                                                   |
-| -------------- | -------------------- | --------------------------------------------------------- |
-| Config         | `Config.php`         | Immutable configuration using PHP 8.3 readonly properties |
-| ManifestReader | `ManifestReader.php` | Reads Vite's `manifest.json`, extracts version hashes     |
-| CacheManager   | `CacheManager.php`   | Tracks client cache inventory via cookies only            |
-| AssetRenderer  | `AssetRenderer.php`  | Generates HTML tags with caching intelligence             |
-| Skybolt        | `Skybolt.php`        | Main API facade, provides simple API for templates        |
-| SkyboltClient  | `skybolt-client.js`  | Client-side ES module for cache management                |
+- Server adapters become trivial (just JSON parsing)
+- No runtime file I/O for manifest
+- Asset content pre-loaded for inlining
+- Easy to add new language adapters
 
-### Performance Improvements (v1 → v2)
+### No Inline Threshold
 
-**Build & Tooling:**
+v2 had a configurable threshold for inlining. v3 always inlines on first visit because:
 
-- Build speed: Runtime minification → <1s with Vite (significantly faster)
-- Minification: Custom PHP → esbuild/Lightning CSS (modern, optimized)
-- Modern stack: ES Modules, PHP 8.3, Vite
+- Simplifies logic
+- Service Worker cache has no size limit
+- First visit performance is consistent
+- Large files are rare in practice
 
-**Caching Behavior:**
+### Cookie-based State
 
-- Repeat visits: Assets loaded from localStorage in milliseconds
-- Zero HTTP requests for cached CSS/JS
-- Automatic cache invalidation via manifest versioning
+Client cache state is tracked via cookies because:
 
-### Request Flow
+- Works with stateless servers
+- No server-side session required
+- Survives browser restarts
+- Multi-cookie sharding handles >4KB
 
-#### First Visit
-
-1. Client → Server: GET /index.php
-2. Server checks cookie (empty - new user)
-3. Server inlines all assets in HTML
-4. Client stores assets in localStorage
-5. Client writes asset versions to cookie
-
-#### Repeat Visit (Cached)
-
-1. Client → Server: GET /index.php (with cookie containing asset versions)
-2. Server reads cookie and parses asset inventory
-3. Server sends `<meta>` tags for cached assets
-4. Client loads from localStorage (~40ms)
-5. **Zero HTTP requests for CSS/JS**
-
-#### After Asset Update
-
-1. Developer runs `bun run build`
-2. Vite generates new version hashes
-3. Client requests page
-4. Server detects version mismatch (via cookie)
-5. Server inlines updated assets
-6. Client updates localStorage and cookie (automatic cache invalidation)
-
-## Common Tasks
+## Development
 
 ### Running the Example
 
 ```bash
-cd examples/timber-v2
+cd examples/minimal
 
 # Install dependencies
+npm install
 composer install
-bun install
 
 # Build assets
-bun run build
+npm run build
 
-# Run dev server
+# Run server
 make serve
-# Visit: http://localhost:8080
-
-# Or run dev server as a daemon
-make start
-# Visit: http://localhost:8080
+# Visit http://localhost:8080
 ```
 
-### Development Mode with HMR
+### Minifying Client Script
 
 ```bash
-# Terminal 1: Vite dev server
-bun run dev
-
-# Terminal 2: PHP server
-php -S localhost:8001 -t public
+cd packages/vite-plugin
+npm run minify  # Creates client.min.js
 ```
 
-### Building for Production
+### Testing Changes
 
-```bash
-cd examples/timber-v2
-bun run build
-# Output in dist/
-```
+1. Edit `packages/vite-plugin/client.js` or `sw.js`
+2. Run `npm run minify` in vite-plugin
+3. Run `npm run build` in example
+4. Test in browser with DevTools open
 
 ## API Reference
 
-### PHP API (Server-side)
-
-```php
-use Skybolt\Skybolt;
-
-$skybolt = new Skybolt(
-    manifestPath: __DIR__ . '/dist/.vite/manifest.json',  // Required
-    basePath: '/assets/',                                 // Default: '/assets/'
-    cdnUrl: 'https://cdn.example.com',                    // Optional
-    devServer: 'http://localhost:5173',                   // Optional (auto-detected)
-    printComments: true,                                  // Debug mode
-    inlineThreshold: 14336                                // 14KB inline threshold
-);
-
-// Critical CSS (auto-optimized)
-echo $skybolt->css('src/css/critical.css');
-
-// Launch script (call once in <head>)
-echo $skybolt->launchScript();
-
-// Async CSS (Service Worker cache)
-echo $skybolt->css('src/css/main.css');
-
-// Async JavaScript (Service Worker cache)
-echo $skybolt->script('src/js/app.js');
-
-// Preload critical resources
-echo $skybolt->preload('images/hero.jpg', as: 'image', fetchpriority: 'high');
-
-// Blocking script for legacy code
-echo $skybolt->script('src/legacy.js', async: false, module: false);
-```
-
-### Vite Configuration
+### Vite Plugin
 
 ```javascript
-// vite.config.js
-import { defineConfig } from 'vite'
+import { skybolt } from '@skybolt/vite-plugin'
 
-export default defineConfig({
-  build: {
-    manifest: true,  // REQUIRED for Skybolt
-    rollupOptions: {
-      input: {
-        critical: 'src/css/critical.css',
-        main: 'src/css/main.css',
-        app: 'src/js/app.js'
-      }
-    }
-  }
+skybolt({
+  outDir: '.skybolt',        // Output dir for render-map.json
+  swPath: '/skybolt-sw.js',  // URL path for Service Worker
+  debug: false               // Enable debug logging
 })
 ```
 
-## Documentation Files
+### PHP Adapter
 
-| File                                    | Purpose                                      |
-| --------------------------------------- | -------------------------------------------- |
-| `README.md`                             | User-facing documentation (installation, usage, features) |
-| `ROADMAP.md`                            | Future plans and feature roadmap             |
-| `CLAUDE.md`                             | AI assistant context (this file)             |
-| `packages/skybolt-core/README.md`       | Package documentation for Composer           |
-| `packages/skybolt-core/ARCHITECTURE.md` | Internal architecture, design decisions      |
-| `packages/skybolt-core/CHANGELOG.md`    | Version history, breaking changes            |
-| `examples/timber-v2/README.md`          | Example setup instructions                   |
-| `docs-legacy/`                          | Historical documentation (v1, old templates) |
+```php
+$sb = new Skybolt\Skybolt($renderMapPath, $cookies);
 
-## Documentation Standards
+$sb->css('src/css/main.css');           // Render CSS
+$sb->script('src/js/app.js');           // Render JS (ES module)
+$sb->script('src/js/old.js', false);    // Render JS (classic)
+$sb->launchScript();                     // Render client launcher
+$sb->getAssetUrl('src/css/main.css');   // Get URL (manual use)
+```
 
-All markdown files in this repository follow [markdownlint](https://github.com/DavidAnson/markdownlint) rules for consistency and quality. When editing documentation, ensure compliance with these rules:
+### Client API (Browser)
 
-### Markdown Formatting Rules
+```javascript
+await skybolt.getCacheInfo()  // {name, count, urls}
+await skybolt.clearCache()    // Clear cache, keep SW
+await skybolt.selfDestruct()  // Clear all, unregister SW, reload
+```
 
-**MD022/blanks-around-headings**: Headings should be surrounded by blank lines
+## Render Map Schema
 
-- ✅ Good: Blank line before and after heading
-- ❌ Bad: Heading directly adjacent to text
-- Ensures visual separation and readability
+```json
+{
+  "version": 1,
+  "generated": "2025-11-24T12:00:00.000Z",
+  "skyboltVersion": "3.0.0",
+  "basePath": "/",
+  "assets": {
+    "src/css/main.css": {
+      "url": "/assets/main-Pw3rT8vL.css",
+      "hash": "Pw3rT8vL",
+      "size": 85000,
+      "content": "body{margin:0}..."
+    }
+  },
+  "client": {
+    "script": "class SkyboltClient{..."
+  },
+  "serviceWorker": {
+    "filename": "skybolt-sw.js",
+    "path": "/skybolt-sw.js"
+  }
+}
+```
 
-**MD031/blanks-around-fences**: Fenced code blocks should be surrounded by blank lines
+## Data Attributes
 
-- ✅ Good: Blank line before and after code fence (```)
-- ❌ Bad: Code fence directly adjacent to text
-- Prevents rendering issues and improves clarity
+Inlined assets use these attributes:
 
-**MD032/blanks-around-lists**: Lists should be surrounded by blank lines
+| Attribute | Purpose | Example |
+|-----------|---------|---------|
+| `data-sb-cache` | Asset ID + hash | `src/css/main.css:Pw3rT8vL` |
+| `data-sb-url` | Cache key URL | `/assets/main-Pw3rT8vL.css` |
 
-- ✅ Good: Blank line before and after list
-- ❌ Bad: List directly adjacent to paragraphs
-- Ensures proper list rendering
+## Cookie Format
 
-**MD040/fenced-code-language**: Fenced code blocks should have a language specified
+```text
+sb_assets = src/css/main.css:Pw3rT8vL,src/js/app.js:Km5nR2xQ
+```
 
-- ✅ Good: ` ```javascript ` or ` ```php ` or ` ```bash `
-- ❌ Bad: ` ``` ` (no language)
-- Enables syntax highlighting
-
-### Applying These Rules
-
-- Run markdownlint before committing documentation changes
-- These rules apply to all `.md` files in the repository
-- Consistent formatting improves readability and maintainability
-- AI assistants should follow these rules when editing documentation
-
-## Git Status (Current Branch: main)
-
-Recent commits:
-
-- `e91c0a1` - feat: Changed to Leaflet map, add CSS minification, less janky top menu, fixed isotope portfolio, made various perf improvements
-- `4e70f64` - fix: get the old code working and dockerize it
-- `b504a19` - feat: old Timber/Skybolt code imported
-
-Staged changes:
-
-- Added: `README-SKYBOLT-V2.md`
-- Added: `packages/skybolt-core/` (entire package)
-- Deleted: `examples/timber-vite/` (renamed to `timber-v2`)
-- Modified: Various CSS files (minified and optimized)
-
-## Known Issues & Technical Debt
-
-1. **Legacy jQuery**: `examples/timber-v2` uses ancient jQuery 1.8.3 plugins that don't work with modern bundlers. Currently served as individual files (acceptable with HTTP/2).
-
-2. **Package Distribution**: Not yet published to Packagist (Composer) or npm.
-
-3. **Testing**: No automated tests yet (PHPUnit/PHPStan configured but not implemented).
-
-## Dependencies
-
-### PHP (Composer)
-
-- PHP 8.3+ (required)
-- No runtime dependencies (framework-agnostic)
-- Dev: PHPUnit 11.0, PHPStan 1.10
-
-### JavaScript (npm/bun)
-
-- Vite 5.0+ (build tool)
-- Lightning CSS 1.23+ (CSS minification)
-- No runtime dependencies (vanilla ES modules)
-
-## Security Considerations
-
-- HTML escaping with `htmlspecialchars()` for all attribute values
-- Secure cookie flags (`secure`, `httponly`, `samesite`)
-- JSON parsing with `JSON_THROW_ON_ERROR`
-- Manifest path validation on construction
-- Only files in Vite manifest can be served
-
-## Performance Best Practices
-
-1. **Keep Critical CSS Minimal**: Only above-the-fold styles
-2. **Lazy Load Non-Critical**: Use `css()` and `script()` (async by default)
-3. **Preload Critical Resources**: Use `preload()` for hero images and fonts
-4. **Use CDN in Production**: Set `cdnUrl` parameter
-5. **Enable Long Cache Headers**: Vite's version hashes enable safe long-term caching
+URL-encoded, comma-separated `name:hash` pairs. Sharded into multiple cookies if >4KB.
 
 ## Debugging
 
-Enable debug comments:
-
-```php
-$skybolt = new Skybolt(
-    // ...
-    printComments: true
-);
-```
-
-Check browser console and localStorage:
+Enable debug logging in Vite plugin:
 
 ```javascript
-// Browser console
-console.log(localStorage.getItem('sb_cache'));
+skybolt({ debug: true })
 ```
+
+Disable Service Worker via URL:
+
+```text
+http://localhost:8080/?no-sw
+```
+
+Browser console:
+
+```javascript
+await skybolt.getCacheInfo()
+await skybolt.clearCache()
+await skybolt.selfDestruct()
+```
+
+## Future Plans
+
+- Ruby adapter (`gem install skybolt`)
+- Python adapter (`pip install skybolt`)
+- Go adapter
+- Framework integrations (Laravel, Rails, Django)
 
 ---
 
-**Last Updated**: November 23, 2025
-**Status**: 🚧 Active Development (v2.1.0)
-**Main Branch**: `main`
+**Last Updated:** November 2025
+**Version:** 3.0.0

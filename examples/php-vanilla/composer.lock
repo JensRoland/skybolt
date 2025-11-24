@@ -1,0 +1,76 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "76a9aa5b66040071c3f2b8eba92cae6b",
+    "packages": [
+        {
+            "name": "skybolt/skybolt",
+            "version": "3.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/php",
+                "reference": "c787b88085705eeb894506650cf17bf3a6bea7f0"
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Skybolt\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Skybolt\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ],
+                "analyse": [
+                    "phpstan analyse src --level=8"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jens Roland",
+                    "email": "jens@jensroland.com"
+                }
+            ],
+            "description": "High-performance asset caching for multi-page applications",
+            "keywords": [
+                "assets",
+                "caching",
+                "performance",
+                "service-worker",
+                "vite"
+            ],
+            "transport-options": {
+                "relative": true
+            }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {},
+    "prefer-stable": true,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=8.1"
+    },
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}

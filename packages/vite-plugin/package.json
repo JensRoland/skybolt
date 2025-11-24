@@ -1,0 +1,44 @@
+{
+  "name": "@skybolt/vite-plugin",
+  "version": "3.0.0",
+  "description": "Vite plugin for Skybolt - High-performance asset caching for multi-page applications",
+  "type": "module",
+  "author": "Jens Roland <mail@jensroland.com> (https://jensroland.com)",
+  "license": "MIT",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "client.min.js",
+    "sw.js",
+    "README.md"
+  ],
+  "scripts": {
+    "minify": "esbuild client.js --minify --outfile=client.min.js"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "skybolt",
+    "caching",
+    "service-worker",
+    "performance",
+    "assets"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skybolt/skybolt.git",
+    "directory": "packages/vite-plugin"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  }
+}

@@ -1,0 +1,79 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "5ee59b5b77fa611e532da0a36ea7ad2a",
+    "packages": [],
+    "packages-dev": [
+        {
+            "name": "skybolt/skybolt-php",
+            "version": "3.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/php",
+                "reference": "f79cdc4bb378101cc0c61e647ee7ebd1537684c4"
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Skybolt\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Skybolt\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ],
+                "analyse": [
+                    "phpstan analyse src --level=8"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jens Roland",
+                    "email": "jens@jensroland.com"
+                }
+            ],
+            "description": "High-performance asset caching for multi-page applications",
+            "keywords": [
+                "assets",
+                "caching",
+                "performance",
+                "service-worker",
+                "vite"
+            ],
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "skybolt/skybolt-php": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": "^8.3"
+    },
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}
