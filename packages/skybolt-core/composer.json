@@ -1,7 +1,7 @@
 {
     "name": "skybolt/skybolt-core",
     "description": "High-performance asset management framework with intelligent client-side caching",
-    "version": "2.2.1",
+    "version": "2.3.1",
     "type": "library",
     "keywords": ["assets", "performance", "cache", "vite", "optimization", "web-performance"],
     "license": "MIT",

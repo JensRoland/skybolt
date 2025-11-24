@@ -4,7 +4,7 @@
  * Loaded asynchronously via Skybolt
  */
 
-console.log('🚀 Skybolt v2 + Vite - Application loaded!');
+console.log('🚀 Skybolt + Vite - Application loaded!');
 
 // Add fade-in animation to cards on scroll
 const observeCards = () => {

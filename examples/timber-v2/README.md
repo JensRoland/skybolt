@@ -1,6 +1,6 @@
-# Timber Example with Skybolt v2
+# Timber Example with Skybolt
 
-This is the Timber template migrated to use Skybolt v2.
+This is the Timber template migrated to use Skybolt.
 
 The template used for this demo is available from <https://gt3themes.com/bootstrap/timber-free-one-page-bootstrap-template/>.
 

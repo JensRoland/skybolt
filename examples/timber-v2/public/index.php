@@ -3,7 +3,7 @@
 
     use Skybolt\Skybolt;
 
-    // Initialize Skybolt v2
+    // Initialize Skybolt
     $skybolt = new Skybolt(
         manifestPath: __DIR__ . '/../dist/.vite/manifest.json',
         basePath: '/',
@@ -22,8 +22,8 @@
     <?php // Preload critical hero background image ?>
     <?= $skybolt->preload('src/images/bgTop.jpg', as: 'image', fetchpriority: 'high') ?>
 
-    <?php // Critical CSS - inlined for immediate rendering ?>
-    <?= $skybolt->css('src/css/critical.css', inline: 'always') ?>
+    <?php // Critical CSS ?>
+    <?= $skybolt->css('src/css/critical.css') ?>
 
     <?php // Skybolt launcher script ?>
     <?= $skybolt->launchScript() ?>

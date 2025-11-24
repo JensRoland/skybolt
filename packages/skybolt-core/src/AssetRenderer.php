@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace Skybolt;
 
 /**
- * Renders HTML tags for assets with caching support
+ * Renders HTML tags for assets with Service Worker caching support
  *
- * Generates <script>, <style>, or <meta> tags depending on:
- * - Whether the client has the asset cached
- * - Whether the asset should be inlined
- * - Whether async loading is requested
+ * Hybrid approach:
+ * - First visit (no cookie): Inline assets with data-sb-cache attributes
+ * - Subsequent visits (has cookie): Standard link/script tags (SW intercepts)
+ *
+ * This eliminates meta tag complexity while keeping first-visit performance benefits.
  */
 class AssetRenderer
 {
-    private const ATTR_PREFIX = 'data-sb-';
-
     public function __construct(
         private readonly Config $config,
         private readonly ManifestReader $manifest,
@@ -23,60 +22,52 @@ class AssetRenderer
         private readonly string $version
     ) {}
 
-    /**
-     * Render critical CSS (inline, synchronous, no caching)
-     */
-    public function renderCriticalCSS(string $entry): string
-    {
-        $content = $this->manifest->getContent($entry);
-
-        if ($content === null) {
-            return $this->renderComment("Critical CSS not found: {$entry}");
-        }
-
-        // Always inline critical CSS - no Skybolt attributes since it's always inlined
-        $comment = $this->renderComment("Critical CSS inlined by Skybolt");
-        return $comment . "\n" . $this->buildTag('style', [], $content);
-    }
 
     /**
-     * Render async CSS (localStorage cached or external link)
+     * Render async CSS
+     * First visit: inline (if small enough)
+     * Subsequent visits: link tag (SW intercepts)
      */
-    public function renderAsyncCSS(string $entry, bool $forceExternal = false): string
+    public function renderAsyncCSS(string $entry): string
     {
         $version = $this->manifest->getVersion($entry);
+        $url = $this->manifest->getUrl($entry);
 
-        if ($version === null) {
+        if ($version === null || $url === null) {
             return $this->renderComment("CSS not found: {$entry}");
         }
 
         // Check if client has it cached
         if ($this->cache->hasLatestVersion($entry, $version)) {
-            // Client has it - send meta tag for loading from localStorage
-            return $this->buildLoadMeta('style', $entry, $version);
+            // Client has it - use standard link tag (SW will intercept)
+            $comment = $this->renderComment("CSS from cache (via SW)");
+            return $comment . "\n" . $this->buildTag('link', [
+                'rel' => 'stylesheet',
+                'href' => $url,
+            ]);
         }
 
-        // Force external mode (no inlining)
-        if ($forceExternal) {
-            $url = $this->manifest->getUrl($entry);
-            return $this->buildAsyncStyleLink($url ?? '');
-        }
-
-        // Client doesn't have it - inline it for caching (if not too large)
+        // Client doesn't have it - decide whether to inline
         $content = $this->manifest->getContent($entry);
 
         if ($content !== null && strlen($content) <= $this->config->inlineThreshold) {
-            // Small enough to inline - inline with store attribute
-            return $this->buildInlineStyle($entry, $version, $content, store: true);
+            // Small enough to inline
+            $comment = $this->renderComment("CSS inlined for caching");
+            return $comment . "\n" . $this->buildInlineStyle($entry, $version, $url, $content);
         }
 
-        // Too large to inline or content not available - use external link (no caching)
-        $url = $this->manifest->getUrl($entry);
-        return $this->buildAsyncStyleLink($url ?? '');
+        // Too large to inline - use external link with cache attributes
+        $comment = $this->renderComment("CSS too large, external link");
+        return $comment . "\n" . $this->buildTag('link', [
+            'rel' => 'stylesheet',
+            'href' => $url,
+            'data-sb-cache' => "{$entry}:{$version}",
+            'data-sb-url' => $url,
+        ]);
     }
 
     /**
-     * Render blocking CSS (traditional <link> tag)
+     * Render blocking CSS (traditional <link> tag, no caching)
      */
     public function renderBlockingCSS(string $entry): string
     {
@@ -93,47 +84,112 @@ class AssetRenderer
     }
 
     /**
-     * Render async script (localStorage cached or external)
+     * Render async script
+     * First visit: inline (if small enough)
+     * Subsequent visits: script tag (SW intercepts)
      */
     public function renderAsyncScript(string $entry, bool $isModule = true): string
     {
         $version = $this->manifest->getVersion($entry);
+        $url = $this->manifest->getUrl($entry);
 
-        if ($version === null) {
+        if ($version === null || $url === null) {
             return $this->renderComment("Script not found: {$entry}");
         }
 
         // Check if client has it cached
         if ($this->cache->hasLatestVersion($entry, $version)) {
-            // Client has it - send meta tag for loading from localStorage
-            return $this->buildLoadMeta('script', $entry, $version, $isModule);
+            // Client has it - use standard script tag (SW will intercept)
+            $comment = $this->renderComment("Script from cache (via SW)");
+            $attrs = [
+                'src' => $url,
+                'async' => null, // Boolean attribute
+            ];
+
+            if ($isModule) {
+                $attrs['type'] = 'module';
+            }
+
+            return $comment . "\n" . $this->buildTag('script', $attrs, '');
         }
 
-        // Client doesn't have it - inline it for caching (if not too large)
+        // Client doesn't have it - decide whether to inline
         $content = $this->manifest->getContent($entry);
 
         if ($content !== null && strlen($content) <= $this->config->inlineThreshold) {
-            // Small enough to inline - inline with store attribute
-            return $this->buildInlineScript($entry, $version, $content, store: true, isModule: $isModule);
+            // Small enough to inline
+            $comment = $this->renderComment("Script inlined for caching");
+            return $comment . "\n" . $this->buildInlineScript($entry, $version, $url, $content, $isModule, true);
         }
 
-        // Too large to inline or content not available - use external script (no caching)
-        $url = $this->manifest->getUrl($entry);
-        return $this->buildAsyncScriptTag($url ?? '', $isModule);
+        // Too large to inline - use external script with cache attributes
+        $comment = $this->renderComment("Script too large, external load (pre-cached)");
+        $attrs = [
+            'src' => $url,
+            'async' => null, // Boolean attribute
+            'data-sb-cache' => "{$entry}:{$version}",
+            'data-sb-url' => $url,
+        ];
+
+        if ($isModule) {
+            $attrs['type'] = 'module';
+            $attrs['data-sb-module'] = 'true';
+        }
+
+        return $comment . "\n" . $this->buildTag('script', $attrs, '');
     }
 
     /**
-     * Render blocking script (traditional <script> tag)
+     * Render blocking script
      */
     public function renderBlockingScript(string $entry, bool $isModule = false): string
     {
+        $version = $this->manifest->getVersion($entry);
         $url = $this->manifest->getUrl($entry);
 
-        if ($url === null) {
+        if ($version === null || $url === null) {
             return $this->renderComment("Script not found: {$entry}");
         }
 
-        return $this->buildScriptTag($url, $isModule);
+        // Check if client has it cached
+        if ($this->cache->hasLatestVersion($entry, $version)) {
+            // Client has it - use standard script tag (SW will intercept)
+            $attrs = ['src' => $url];
+
+            if ($isModule) {
+                $attrs['type'] = 'module';
+            }
+
+            return $this->buildTag('script', $attrs, '');
+        }
+
+        // Client doesn't have it - decide whether to inline
+        $content = $this->manifest->getContent($entry);
+
+        if ($content !== null && strlen($content) <= $this->config->inlineThreshold) {
+            // Small enough to inline
+            return $this->buildInlineScript($entry, $version, $url, $content, $isModule, false);
+        }
+
+        // Too large to inline - use external script with cache attributes
+        // so client can pre-cache it on first load
+        $attrs = [
+            'src' => $url,
+            'data-sb-cache' => "{$entry}:{$version}",
+            'data-sb-url' => $url,
+        ];
+
+        // TODO: Does this make sense? If we want it to be blocking, it can't be a module
+        if ($isModule) {
+            $attrs['type'] = 'module';
+            $attrs['data-sb-module'] = 'true';
+        }
+
+        if ($async) {
+            $attrs['data-sb-async'] = 'true';
+        }
+
+        return $this->buildTag('script', $attrs, '');
     }
 
     /**
@@ -171,7 +227,29 @@ class AssetRenderer
      */
     public function renderLaunchScript(): string
     {
-        // The launcher script is embedded in the package (minified version)
+        $clientName = 'skybolt-client';
+        $clientVersion = $this->version;
+        $clientUrl = $this->config->basePath . 'skybolt-client.php?v=' . $this->version;
+
+        // Config meta tag (includes SW path)
+        $configMeta = $this->buildConfigMeta();
+
+        // Add version comment if debug mode is enabled
+        $versionComment = $this->renderComment("Skybolt v{$this->version} with Service Worker caching");
+
+        // Check if client has the client script cached
+        if ($this->cache->hasLatestVersion($clientName, $clientVersion)) {
+            // Client has it - use external script tag (SW will serve from cache)
+            $comment = $this->renderComment("Client script from cache (via SW)");
+            $scriptTag = $this->buildTag('script', [
+                'type' => 'module',
+                'src' => $clientUrl,
+            ], '');
+
+            return $versionComment . "\n" . $configMeta . "\n" . $comment . "\n" . $scriptTag;
+        }
+
+        // First visit - inline it with cache attributes
         $loaderPath = __DIR__ . '/../assets/skybolt-client.min.js';
         $loaderContent = file_get_contents($loaderPath);
 
@@ -179,43 +257,25 @@ class AssetRenderer
             throw new \RuntimeException("Skybolt client script not found: {$loaderPath}");
         }
 
-        // Inject Skybolt version into the loader script header comment
-        $loaderContent = preg_replace(
-            '/(\* Skybolt Client)/',
-            "$1 - v{$this->version}",
-            $loaderContent,
-            1
-        );
+        $comment = $this->renderComment("Client script inlined for first visit");
+        $inlineScript = $this->buildTag('script', [
+            'type' => 'module',
+            'data-sb-cache' => "{$clientName}:{$clientVersion}",
+            'data-sb-url' => $clientUrl,
+            'data-sb-module' => 'true',
+        ], $loaderContent);
 
-        // Generate a version hash for the loader
-        $loaderHash = substr(md5($loaderContent), 0, 8);
-
-        // Config meta tag
-        $configMeta = $this->buildConfigMeta($loaderHash);
-
-        // Add version comment if debug mode is enabled
-        $versionComment = $this->renderComment("Skybolt v{$this->version}");
-
-        // Always inline the loader script
-        $inlineScript = $this->buildInlineScript(
-            'skybolt-loader',
-            $loaderHash,
-            $loaderContent,
-            store: false,
-            isModule: true
-        );
-
-        return $versionComment . "\n" . $configMeta . "\n" . $inlineScript;
+        return $versionComment . "\n" . $configMeta . "\n" . $comment . "\n" . $inlineScript;
     }
 
     /**
      * Build config meta tag for client
      */
-    private function buildConfigMeta(string $loaderVersion): string
+    private function buildConfigMeta(): string
     {
         $config = [
             'basePath' => $this->config->basePath,
-            'loaderVersion' => $loaderVersion,
+            'swPath' => '/skybolt-sw.php', // PHP endpoint that serves SW from vendor
         ];
 
         return $this->buildTag('meta', [
@@ -225,118 +285,50 @@ class AssetRenderer
     }
 
     /**
-     * Build inline <style> tag with caching attributes
+     * Build inline <style> tag with Service Worker cache attributes
      */
     private function buildInlineStyle(
         string $name,
         string $version,
-        string $content,
-        bool $store
+        string $url,
+        string $content
     ): string {
         $attrs = [
-            self::ATTR_PREFIX . 'type' => 'style',
-            self::ATTR_PREFIX . 'name' => $name,
-            self::ATTR_PREFIX . 'version' => $version,
+            'data-sb-cache' => "{$name}:{$version}",
+            'data-sb-url' => $url,
         ];
 
-        if ($store) {
-            $attrs[self::ATTR_PREFIX . 'state'] = 'store';
-        }
-
-        $comment = $this->renderComment("Inlined for performance by Skybolt");
-        return $comment . "\n" . $this->buildTag('style', $attrs, $content);
+        return $this->buildTag('style', $attrs, $content);
     }
 
     /**
-     * Build inline <script> tag with caching attributes
+     * Build inline <script> tag with Service Worker cache attributes
      */
     private function buildInlineScript(
         string $name,
         string $version,
+        string $url,
         string $content,
-        bool $store,
-        bool $isModule = true
+        bool $isModule = true,
+        bool $async = true
     ): string {
         $attrs = [
-            self::ATTR_PREFIX . 'type' => 'script',
-            self::ATTR_PREFIX . 'name' => $name,
-            self::ATTR_PREFIX . 'version' => $version,
+            'data-sb-cache' => "{$name}:{$version}",
+            'data-sb-url' => $url,
         ];
 
-        if ($store) {
-            $attrs[self::ATTR_PREFIX . 'state'] = 'store';
-        }
-
-        // Add type="module" for ES module scripts
+        // Preserve module attribute
         if ($isModule) {
             $attrs['type'] = 'module';
+            $attrs['data-sb-module'] = 'true';
         }
 
-        $comment = $this->renderComment("Inlined for performance by Skybolt");
-        return $comment . "\n" . $this->buildTag('script', $attrs, $content);
-    }
-
-    /**
-     * Build <meta> tag for loading from localStorage
-     */
-    private function buildLoadMeta(string $type, string $name, string $version, bool $isModule = true): string
-    {
-        $attrs = [
-            self::ATTR_PREFIX . 'type' => $type,
-            self::ATTR_PREFIX . 'name' => $name,
-            self::ATTR_PREFIX . 'version' => $version,
-            self::ATTR_PREFIX . 'state' => 'load',
-        ];
-
-        // Only add module attribute for scripts
-        if ($type === 'script') {
-            $attrs[self::ATTR_PREFIX . 'module'] = $isModule ? 'true' : 'false';
+        // Preserve async attribute
+        if ($async) {
+            $attrs['data-sb-async'] = 'true';
         }
 
-        $comment = $this->renderComment("Cached by Skybolt");
-        return $comment . ' ' . $this->buildTag('meta', $attrs);
-    }
-
-    /**
-     * Build async <meta> tag for lazy loading (no caching)
-     */
-    private function buildAsyncMeta(string $type, string $url, array $attributes = []): string
-    {
-        $attributes[self::ATTR_PREFIX . 'type'] = $type;
-        $attributes[self::ATTR_PREFIX . 'src'] = $url;
-        $attributes[self::ATTR_PREFIX . 'state'] = 'load-async';
-
-        return $this->buildTag('meta', $attributes);
-    }
-
-    /**
-     * Build async <script> tag
-     */
-    private function buildAsyncScriptTag(string $src, bool $isModule = true): string
-    {
-        // For now, use meta tags for async loading (handled by client)
-        // We could extend this to add module type to the meta tag if needed
-        return $this->buildAsyncMeta('script', $src, [self::ATTR_PREFIX . 'module' => $isModule ? 'true' : 'false']);
-    }
-
-    /**
-     * Build async <link rel="stylesheet"> tag
-     */
-    private function buildAsyncStyleLink(string $href): string
-    {
-        return $this->buildAsyncMeta('style', $href);
-    }
-
-    /**
-     * Build regular <script> tag
-     */
-    private function buildScriptTag(string $src, bool $isModule = true): string
-    {
-        $attrs = ['src' => $src];
-        if ($isModule) {
-            $attrs['type'] = 'module';
-        }
-        return $this->buildTag('script', $attrs, '');
+        return $this->buildTag('script', $attrs, $content);
     }
 
     /**
@@ -350,6 +342,7 @@ class AssetRenderer
         $attrs = [];
         foreach ($attributes as $key => $value) {
             if ($value === null) {
+                // Boolean attribute (e.g., async, defer)
                 $attrs[] = $key;
             } else {
                 $escapedValue = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
@@ -360,7 +353,7 @@ class AssetRenderer
         $attrString = empty($attrs) ? '' : ' ' . implode(' ', $attrs);
 
         // Void elements (self-closing)
-        if ($content === null && $tagName === 'meta') {
+        if ($content === null && in_array($tagName, ['meta', 'link'])) {
             return "<{$tagName}{$attrString}>";
         }
 

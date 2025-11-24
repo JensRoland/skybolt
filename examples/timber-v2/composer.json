@@ -1,6 +1,6 @@
 {
     "name": "timber/v2",
-    "description": "Timber template with Skybolt v2",
+    "description": "Timber template with Skybolt",
     "type": "project",
     "require": {
         "php": "^8.3"

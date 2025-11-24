@@ -11,7 +11,7 @@ namespace Skybolt;
  */
 class Skybolt
 {
-    public const VERSION = '2.2.1';
+    public const VERSION = '2.3.1';
 
     private Config $config;
     private ManifestReader $manifest;
@@ -54,20 +54,14 @@ class Skybolt
      * Render CSS with flexible loading options
      *
      * @param string $entry Source file path (e.g., 'src/main.css')
-     * @param string|null $inline Control inlining: 'always' (critical CSS), 'never' (always external), null (auto)
      * @param bool $async Whether to load asynchronously (default: true)
      * @return string|self Returns HTML string, or $this for fluent API (deprecated)
      */
-    public function css(string $entry, ?string $inline = null, bool $async = true): string|self
+    public function css(string $entry, bool $async = true): string|self
     {
-        // Handle 'always' inline mode (critical CSS)
-        if ($inline === 'always') {
-            return $this->renderer->renderCriticalCSS($entry);
-        }
-
         // Handle async CSS (default)
         if ($async) {
-            return $this->renderer->renderAsyncCSS($entry, forceExternal: $inline === 'never');
+            return $this->renderer->renderAsyncCSS($entry);
         }
 
         // Blocking CSS (rare case)

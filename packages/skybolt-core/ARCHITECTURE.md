@@ -1,13 +1,13 @@
 # Skybolt Architecture
 
-This document explains the internal architecture of Skybolt v2 and how all the pieces fit together.
+This document explains the internal architecture of Skybolt and how all the pieces fit together.
 
 ## Overview
 
 Skybolt is a two-part system:
 
 1. **Server-side (PHP)**: Coordinates cache state and renders optimized HTML
-2. **Client-side (JavaScript)**: Manages localStorage and loads cached assets
+2. **Client-side (JavaScript + Service Worker)**: Manages Cache API storage and serves cached assets
 
 ## Core Components
 
@@ -60,12 +60,11 @@ Reads and parses Vite's `manifest.json` file.
 
 ### 3. CacheManager (`CacheManager.php`)
 
-Manages client cache inventory using sessions and cookies.
+Manages client cache inventory using cookies.
 
 **Responsibilities:**
 
 - Track which assets each client has cached
-- Store inventory in PHP session
 - Sync with client via cookies
 - Request inventory updates when needed
 - Manage loader script cache state
@@ -79,8 +78,7 @@ Manages client cache inventory using sessions and cookies.
 
 **Storage Strategy:**
 
-- Primary: PHP `$_SESSION['skybolt_inventory']`
-- Backup: Cookie `sb_assets` (JSON encoded)
+- Primary: Cookie `sb_assets` (JSON encoded)
 - Client sync: Cookie `sb_inventory` (flag)
 
 ### 4. AssetRenderer (`AssetRenderer.php`)
@@ -89,17 +87,18 @@ Renders HTML tags with caching intelligence.
 
 **Responsibilities:**
 
-- Generate `<script>`, `<style>`, or `<meta>` tags
-- Decide whether to inline or reference assets
-- Add Skybolt data attributes for client processing
+- Generate `<script>`, `<style>`, or `<link>` tags
+- Decide whether to inline assets or use external tags
+- Add Skybolt data attributes (`data-sb-cache`, `data-sb-url`) for inline assets
 - Respect size thresholds for inlining
 - Handle dev mode vs production
 
 **Key Methods:**
 
-- `renderCriticalCSS(string $entry): string` - Always inline
-- `renderAsyncCSS(string $entry): string` - Inline or async
-- `renderAsyncScript(string $entry): string` - Inline or async
+- `renderAsyncCSS(string $entry): string` - Smart auto-optimization (inline small files, external for large)
+- `renderBlockingCSS(string $entry): string` - Traditional blocking `<link>` tag
+- `renderAsyncScript(string $entry): string` - Smart auto-optimization (inline small files, external for large)
+- `renderBlockingScript(string $entry): string` - Traditional blocking `<script>` tag
 - `renderLaunchScript(): string` - Render Skybolt client
 
 **Rendering Logic:**
@@ -109,25 +108,23 @@ Renders HTML tags with caching intelligence.
 │ Should we inline this asset?            │
 └─────────────────────────────────────────┘
               ↓
-     ┌────────┴────────┐
-     │  Is Critical?   │
-     └────────┬────────┘
-              ↓ YES
-        [Inline it]
-              ↓ NO
      ┌────────┴────────────┐
      │ Client has cached?  │
      └────────┬────────────┘
               ↓ YES
-      [Send <meta> tag]
+    [<link>/<script> tag]
+    (SW intercepts & serves)
               ↓ NO
      ┌────────┴────────────┐
      │ Size < threshold?   │
+     │   (default: 50KB)   │
      └────────┬────────────┘
               ↓ YES
-        [Inline it]
+  [Inline with data-sb-cache]
+  (Cached by SW for next visit)
               ↓ NO
-     [Async <script>/<link>]
+     [External <link>/<script>]
+     (Network fetch, SW caches)
 ```
 
 ### 5. Skybolt (`Skybolt.php`)
@@ -145,8 +142,8 @@ Main facade class - public API for users.
 **API Style:**
 
 ```php
-// Critical CSS (always inlined)
-echo $skybolt->css('src/critical.css', inline: 'always');
+// Critical CSS (auto-optimized)
+echo $skybolt->css('src/critical.css');
 
 // Launch the client-side cache controller
 echo $skybolt->launchScript();
@@ -168,150 +165,153 @@ echo $skybolt->script('src/jquery.js', async: false, module: false);
 
 ### SkyboltClient (`skybolt-client.js`)
 
-Modern ES module for client-side cache management.
+Modern ES module for client-side Service Worker registration and cache coordination.
 
 **Initialization Flow:**
 
-1. Load config from <meta name="skybolt-config">
-2. Load asset map from localStorage
-3. Process <head> assets immediately
-4. Wait for DOMContentLoaded
-5. Process <body> assets
-6. Report inventory if requested
+1. Load config from `<meta name="skybolt-config">`
+2. Register Service Worker (`/skybolt-sw.php`)
+3. Wait for Service Worker to be ready
+4. Process inlined assets (extract and cache)
+5. Wait for DOMContentLoaded
+6. Update cookie with cached asset versions
+
+**Service Worker (`skybolt-sw.js`)**
+
+Lightweight custom Service Worker for cache-first asset serving.
+
+**Features:**
+
+- Cache-first strategy for `.js`, `.css`, `.mjs` files
+- Dev mode bypass (checks for `?dev-mode` or localhost:5173)
+- Automatic cache cleanup on activation
+- Message handlers for cache info and clearing
 
 **Asset Processing:**
 
 ```javascript
-// Store inlined assets
-document.querySelectorAll('[data-sb-state="store"]')
-  → Extract content
-  → Save to localStorage
-  → Mark as stored
+// Extract and cache inlined assets
+document.querySelectorAll('[data-sb-cache]')
+  → Extract content from <style>/<script>
+  → Create Response object
+  → Store in Cache API (cache name: 'skybolt-assets-v1')
+  → Update version tracking
 
-// Load cached assets
-document.querySelectorAll('meta[data-sb-state="load"]')
-  → Validate cache
-  → Create <script>/<style> element
-  → Inject content from localStorage
-  → Replace <meta> tag
-
-// Load async assets
-document.querySelectorAll('meta[data-sb-state="load-async"]')
-  → Create <script>/<link> element
-  → Set src/href
-  → Append to <head> on window.load
+// Service Worker intercepts requests
+fetch event
+  → Check if asset request (.js, .css)
+  → Look in Cache API
+  → If found: serve from cache (instant)
+  → If not found: fetch from network + cache for next time
 ```
 
-**localStorage Structure:**
+**Cache API Structure:**
 
 ```javascript
+// Cache name: 'skybolt-assets-v1'
 {
-  "sb_cache": {
-    "src/main.css": {
-      "type": "style",
-      "version": "a1b2c3d4",
-      "data": "body{margin:0}...",
-      "size": 12345
-    },
-    "src/app.js": {
-      "type": "script",
-      "version": "e5f6g7h8",
-      "data": "console.log('hello')...",
-      "size": 6789
+  '/assets/main-a1b2c3d4.css': Response {
+    body: 'body{margin:0}...',
+    headers: {
+      'Content-Type': 'text/css',
+      'X-Skybolt-Version': 'a1b2c3d4',
+      'X-Skybolt-Name': 'src/css/main.css',
+      'Cache-Control': 'public, max-age=31536000, immutable'
     }
   }
 }
 ```
 
-### Cache Validation & Corruption Detection
-
-Skybolt includes robust cache validation to ensure integrity and automatically recover from corrupted states.
-
-**Validation Triggers:**
-
-The client validates the cache in two scenarios:
-
-1. **On Load** (`loadFromStorage`): When reading from localStorage
-2. **On Use** (`loadCachedAssets`): When injecting cached assets into the page
-
-**Validation Checks:**
-
-When loading a cached asset, Skybolt performs three validation checks:
+**Cookie Structure:**
 
 ```javascript
-const item = this.assetMap[name];
+// Cookie: sb_assets
+"src/css/critical.css:DGWO61LE,src/css/main.css:wsCF4wOV,src/js/app.js:X8kM9nPQ"
 
-// 1. Asset exists in cache
-if (!item) {
-    this.selfDestruct();
-    return;
-}
-
-// 2. Version matches server expectation
-if (item.version !== version) {
-    this.selfDestruct();
-    return;
-}
-
-// 3. Data integrity check (size matches)
-if (item.data.length !== item.size) {
-    this.selfDestruct();
-    return;
-}
+// Multi-cookie sharding (if data exceeds 4KB)
+// sb_assets: first 4KB chunk
+// sb_assets_2: second chunk
+// sb_assets_3: third chunk
+// sb_assets_count: total number of chunks
 ```
 
-**Recovery Process (`selfDestruct`):**
+### Cache Management & Recovery
 
-When corruption is detected, Skybolt executes an automatic recovery sequence:
+**Version Tracking:**
 
-1. Clear localStorage cache
-2. Clear version cookie
-3. Reload page (server will detect clean state and inline assets)
-
-**Common Corruption Scenarios:**
-
-| Scenario             | Detection                                      | Recovery                                             |
-| -------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| **Version Mismatch** | Server deployed new assets with different hash | selfDestruct() → reload → server inlines new version |
-| **Partial Write**    | localStorage quota exceeded mid-write          | Size check fails → selfDestruct() → clean reload     |
-| **Manual Tampering** | User/extension modified localStorage           | Any validation check fails → selfDestruct()          |
-| **Parse Error**      | Corrupted JSON in localStorage                 | try/catch in loadFromStorage() → selfDestruct()      |
-| **Missing Asset**    | Asset deleted but version cookie still present | Null check fails → selfDestruct()                    |
-
-**Error Handling:**
+The client tracks cached asset versions via cookies and compares with the server on each request:
 
 ```javascript
-// Safe localStorage operations with fallback
-loadFromStorage() {
-    try {
-        const cached = localStorage.getItem(this.cacheKey);
-        if (cached) {
-            this.assetMap = JSON.parse(cached);
-        }
-    } catch (err) {
-        console.warn('Skybolt: Failed to load cache', err);
-        this.selfDestruct();  // Recover from parse errors
-    }
-}
+// Client stores versions after caching
+this.versions = {
+  'src/css/main.css': 'a1b2c3d4',
+  'src/js/app.js': 'e5f6g7h8'
+};
+this.updateCookie(); // Write to sb_assets cookie
+```
 
-saveToStorage() {
-    try {
-        localStorage.setItem(this.cacheKey, JSON.stringify(this.assetMap));
-    } catch (err) {
-        console.warn('Skybolt: Failed to save cache', err);
-        // Don't self-destruct on save errors (e.g., quota exceeded)
-        // Just log the error and continue
+**Cache Invalidation:**
+
+When the server detects a version mismatch (new build deployed):
+
+1. Server inlines updated assets with `data-sb-cache` attributes
+2. Client extracts and caches to Cache API
+3. Client updates cookie with new versions
+4. Service Worker automatically serves new version on next request
+
+**Recovery Methods:**
+
+```javascript
+// Clear cache without unregistering Service Worker
+window.skybolt.clearCache()
+  → Delete 'skybolt-assets-v1' from Cache API
+  → Clear sb_assets cookies
+  → Keep Service Worker registered
+
+// Full reset (development/debugging)
+window.skybolt.selfDestruct()
+  → Clear Cache API
+  → Clear cookies
+  → Unregister Service Worker
+  → Reload page
+```
+
+**Graceful Degradation:**
+
+If Service Workers are not supported or fail to register:
+
+```javascript
+handleNoServiceWorker() {
+  // Convert inlined assets to external links
+  document.querySelectorAll('[data-sb-cache]').forEach(element => {
+    const url = element.getAttribute('data-sb-url');
+
+    // Replace inline <style> with <link>
+    if (element.tagName === 'STYLE') {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = url;
+      element.parentNode.replaceChild(link, element);
     }
+
+    // Replace inline <script> with external <script>
+    if (element.tagName === 'SCRIPT') {
+      const script = document.createElement('script');
+      script.src = url;
+      // Preserve module/async attributes
+      element.parentNode.replaceChild(script, element);
+    }
+  });
 }
 ```
 
 **Design Rationale:**
 
-- **Fail-Safe by Default**: Any validation failure triggers automatic recovery
-- **User Experience**: Silent recovery with console warnings (no user-facing errors)
-- **Zero Maintenance**: No manual cache clearing required
-- **Performance**: Validation checks are fast (simple equality comparisons)
-- **Reliability**: One bad asset doesn't corrupt the entire cache (per-asset validation)
+- **Browser Native**: Uses standard Cache API (no quota limits like localStorage)
+- **Persistent**: Cache survives browser restarts
+- **Offline Capable**: Assets available even without network
+- **Transparent**: Standard HTTP caching semantics
+- **Debuggable**: Inspect cache in DevTools Application tab
 
 ## Request Flow
 
@@ -320,18 +320,17 @@ saveToStorage() {
 ```text
 1. Client → Server: GET /index.php
 2. Server:
-   - Check session (empty - new user)
+   - Check cookie (empty - new user)
    - Read Vite manifest
-   - Decide to inline all assets
+   - Inline small assets with data-sb-cache attributes
+   - Send large assets as external links
 3. Server → Client: HTML with inlined assets
 4. Client:
-   - Parse HTML
-   - Store assets to localStorage
-   - Report inventory via beacon
-5. Client → Server: POST /inventory.php (versions)
-6. Server:
-   - Update session with asset versions
-   - Respond 204 No Content
+   - Register Service Worker (/skybolt-sw.php)
+   - Extract inlined assets from DOM
+   - Store directly to Cache API
+   - Large assets fetched, SW caches them
+   - Update sb_assets cookie with versions
 ```
 
 ### Repeat Visit (Cached)
@@ -340,15 +339,18 @@ saveToStorage() {
 1. Client → Server: GET /index.php
    - Sends cookie with asset versions
 2. Server:
-   - Check session (has inventory)
+   - Check cookie (has asset versions)
    - Read Vite manifest
-   - Compare versions
-   - Send <meta> tags for cached assets
-3. Server → Client: HTML with <meta> tags
-4. Client:
-   - Load assets from localStorage
-   - Replace <meta> tags with <script>/<style>
-   - Assets appear instantly
+   - Compare versions (match)
+   - Send standard <link>/<script> tags
+3. Server → Client: HTML with external asset references
+4. Browser:
+   - Request assets (GET /assets/main-abc123.css)
+5. Service Worker:
+   - Intercept fetch event
+   - Check Cache API
+   - Serve from cache (~1ms response time)
+   - **Zero network requests**
 ```
 
 ### After Asset Update
@@ -358,77 +360,59 @@ saveToStorage() {
    - Vite generates new hashes
    - manifest.json updated
 2. Client → Server: GET /index.php
+   - Sends cookie with old versions
 3. Server:
    - Read new manifest
-   - Detect version mismatch
-   - Inline new assets
+   - Detect version mismatch (cookie vs manifest)
+   - Inline updated assets with data-sb-cache
 4. Client:
-   - Update localStorage
-   - Report new inventory
-5. Server:
-   - Update session
+   - Extract inlined assets
+   - Update Cache API (overwrites old versions)
+   - Update sb_assets cookie with new versions
+5. Next Request:
+   - Service Worker serves new version from cache
 ```
 
 ## Data Attributes
 
-Skybolt uses custom data attributes with `data-sb-` prefix:
+Skybolt uses custom data attributes with `data-sb-` prefix for inline assets:
 
-| Attribute         | Purpose          | Values                                            |
-| ----------------- | ---------------- | ------------------------------------------------- |
-| `data-sb-type`    | Asset type       | `script`, `style`                                 |
-| `data-sb-name`    | Asset identifier | Entry path from manifest                          |
-| `data-sb-version` | Version hash     | Extracted from filename                           |
-| `data-sb-state`   | Processing state | `store`, `load`, `load-async`, `stored`, `loaded` |
-| `data-sb-src`     | External URL     | For async assets                                  |
+| Attribute        | Purpose                    | Values                          |
+| ---------------- | -------------------------- | ------------------------------- |
+| `data-sb-cache`  | Cache identifier + version | `{name}:{version}` (e.g., "src/css/main.css:a1b2c3d4") |
+| `data-sb-url`    | Asset URL for caching      | Full URL path (e.g., "/assets/main-a1b2c3d4.css") |
+| `data-sb-module` | ES module flag (scripts)   | `"true"` if type="module"       |
+| `data-sb-async`  | Async flag (scripts)       | `"true"` if async attribute     |
 
-## Performance Optimizations
+**Example Usage:**
 
-### 1. Lazy Dev Server Check
+```html
+<!-- Inlined CSS with cache attributes -->
+<style data-sb-cache="src/css/main.css:wsCF4wOV" data-sb-url="/assets/main-wsCF4wOV.css">
+body{margin:0}...
+</style>
 
-```php
-// Only check once per 5 seconds, cache result
-static $cache = null;
-static $cacheTime = 0;
-```
-
-### 2. Manifest Caching
-
-```php
-// Version hashes cached in ManifestReader
-$this->cache['version'][$entry] = $version;
-```
-
-### 3. Session Storage
-
-```php
-// Inventory stored in session, not re-parsed each request
-$this->session['skybolt_inventory'] = $this->inventory;
-```
-
-### 4. Critical CSS Inline
-
-```php
-// Critical CSS always inlined - no round-trip
-$this->buildInlineStyle($entry, $version, $content);
-```
-
-### 5. Async Non-Critical
-
-```php
-// Non-critical assets deferred to window.load
-window.addEventListener('load', () => {
-  this.loadScript(src);
-});
+<!-- Inlined script with module + async -->
+<script type="module"
+        data-sb-cache="src/js/app.js:X8kM9nPQ"
+        data-sb-url="/assets/app-X8kM9nPQ.js"
+        data-sb-module="true"
+        data-sb-async="true">
+console.log('app')...
+</script>
 ```
 
 ## Error Handling
 
-### Client Cache Corruption
+### Service Worker Registration Failure
 
 ```javascript
-// Validate size and version
-if (item.data.length !== item.size || item.version !== version) {
-  this.selfDestruct(); // Clear and reload
+// Graceful fallback to external loading
+try {
+  await navigator.serviceWorker.register('/skybolt-sw.php');
+} catch (error) {
+  console.error('[Skybolt] Service Worker registration failed:', error);
+  this.handleNoServiceWorker(); // Convert inline to external
 }
 ```
 
@@ -445,6 +429,21 @@ if (!file_exists($this->manifestPath)) {
 ```php
 if ($file === null) {
   return $this->renderComment("Asset not found: {$entry}");
+}
+```
+
+### Cache API Errors
+
+```javascript
+// Safe Cache API operations with fallback
+async cacheInlineAsset(data) {
+  try {
+    const cache = await caches.open('skybolt-assets-v1');
+    await cache.put(url, response);
+  } catch (error) {
+    console.error('[Skybolt] Failed to cache inline asset:', error);
+    // Continue without caching - next visit will inline again
+  }
 }
 ```
 
@@ -477,26 +476,6 @@ json_decode($input, true, 512, JSON_THROW_ON_ERROR);
 ```php
 // Manifest paths are validated by Vite
 // Only files in manifest can be served
-```
-
-## Extension Points
-
-### Custom Session Adapter
-
-```php
-interface SessionInterface {
-  public function get(string $key): mixed;
-  public function set(string $key, mixed $value): void;
-}
-```
-
-### Custom Rendering Strategy
-
-```php
-interface StrategyInterface {
-  public function shouldInline(string $entry, int $size): bool;
-  public function shouldCache(string $entry): bool;
-}
 ```
 
 ## Testing Strategy

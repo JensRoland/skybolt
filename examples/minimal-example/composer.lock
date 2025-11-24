@@ -4,16 +4,16 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "09293b4173fba7804302cf3123de9d12",
+    "content-hash": "2e34c4c687859fad390eb252d4becf7c",
     "packages": [],
     "packages-dev": [
         {
             "name": "skybolt/skybolt-core",
-            "version": "dev-main",
+            "version": "2.3.1",
             "dist": {
                 "type": "path",
                 "url": "../../packages/skybolt-core",
-                "reference": "265c6cfade1cd9cc733ab4dc7d969053ce84c125"
+                "reference": "a728971a2b19e7852f854d38c6ebb3f5e4f4a768"
             },
             "require": {
                 "php": "^8.3"

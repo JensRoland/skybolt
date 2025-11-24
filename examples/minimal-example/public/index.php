@@ -10,9 +10,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Skybolt\Skybolt;
 
-// Start session for cache tracking
-session_start();
-
 // Create Skybolt instance
 $skybolt = new Skybolt(
     manifestPath: __DIR__ . '/../dist/.vite/manifest.json',
@@ -31,13 +28,13 @@ $skybolt = new Skybolt(
     <meta name="description" content="High-performance web demo powered by Skybolt">
     <title>Minimal Example - Skybolt Demo</title>
 
-    <?php // Critical CSS - inlined for immediate First Contentful Paint ?>
-    <?= $skybolt->css('src/css/critical.css', inline: 'always') ?>
+    <?php // Critical CSS ?>
+    <?= $skybolt->css('src/css/critical.css') ?>
 
     <?php // Skybolt launcher - must be called once in <head> ?>
     <?= $skybolt->launchScript() ?>
 
-    <?php // Main CSS - loaded asynchronously (localStorage or CDN) ?>
+    <?php // Main CSS - loaded asynchronously (Service Worker cache) ?>
     <?= $skybolt->css('src/css/main.css') ?>
 </head>
 <body>
@@ -51,7 +48,7 @@ $skybolt = new Skybolt(
     <div class="hero">
         <div class="container">
             <h2>Lightning-Fast Asset Loading</h2>
-            <p>Experience the power of localStorage caching with server-side coordination</p>
+            <p>Experience the power of Service Worker caching with server-side coordination</p>
         </div>
     </div>
 
@@ -69,7 +66,7 @@ $skybolt = new Skybolt(
             <div class="card-grid">
                 <div class="card">
                     <h3>🚀 Blazing Fast</h3>
-                    <p>Assets load in under 50ms on repeat visits thanks to localStorage caching</p>
+                    <p>Assets load in under 10ms on repeat visits thanks to Service Worker caching</p>
                 </div>
                 <div class="card">
                     <h3>🎯 Smart Caching</h3>
@@ -106,8 +103,8 @@ $skybolt = new Skybolt(
                 </div>
                 <div class="card">
                     <h3>Return Visit</h3>
-                    <p><strong>&lt;50ms</strong> CSS/JS load time</p>
-                    <p>90% faster from localStorage</p>
+                    <p><strong>&lt;10ms</strong> CSS/JS load time</p>
+                    <p>90% faster from Service Worker cache</p>
                 </div>
                 <div class="card">
                     <h3>Transfer Size</h3>

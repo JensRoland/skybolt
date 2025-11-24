@@ -33,6 +33,8 @@ This document outlines the planned features and improvements for Skybolt.
 - [ ] **Simplified HTML meta syntax** - maybe `sb-load-script="boot:Fhwa4p"` and `sb-load-style="default:FFJg-n"` and `sb-load-fragment="header:PgpDxo"`
 - [X] **Sessionless Caching** - Support for caching without session inventory since most 'modern' web devs are afraid of sessions, and we won't convince anyone to configure DB-backed sessions just for Skybolt. The session inventory was really just a half-baked attempt at working around the 4KB cookie limit (and not be so wasteful with cookie headers), but I was still using the cookie... to get around the cookie limit I could just use multiple cookies if needed. Could also use a better data packing method than JSON.
 - [ ] **Composer Package** - Publish to Packagist for easy installation
+- [X] **Servioce Workers and Cache API** - Attempt to use WorkBox or similar as the caching engine instead of localStorage for better DX and performance
+- [ ] **Async CSS** - Make it possible to actually load non-critical CSS in a non-blocking way while still using Service Worker caching; preload plus JS to apply styles once fetched?
 
 ## Version 3.1 (Planned) 📦
 

@@ -1,10 +1,10 @@
-# CLAUDE.md - Skybolt v2 Project Context
+# CLAUDE.md - Skybolt Project Context
 
-This document provides context for AI assistants working on the Skybolt v2 project across multiple conversation sessions.
+This document provides context for AI assistants working on the Skybolt project across multiple conversation sessions.
 
 ## Project Overview
 
-**Skybolt** is a high-performance asset management framework with intelligent client-side caching. The project is currently in the process of transitioning from v1 (legacy runtime minification) to v2 (modern Vite-based build pipeline with PHP 8.3+).
+**Skybolt** is a high-performance asset management framework with intelligent client-side caching. The project is currently in the process of transitioning from legacy runtime minification to modern Vite-based build pipeline with PHP 8.3+ and Service Workers.
 
 ### Project Goals
 
@@ -38,7 +38,7 @@ timber/0.4.0/
 ├── examples/
 │   ├── timber-v2/                 # Complete working example (Timber template)
 │   │   ├── public/
-│   │   │   └── index.php          # Demo site using Skybolt v2
+│   │   │   └── index.php          # Demo portfolio site using Skybolt
 │   │   ├── src/
 │   │   │   ├── css/               # CSS source files
 │   │   │   └── js/                # JS source files
@@ -58,7 +58,7 @@ timber/0.4.0/
 
 ### ✅ Completed
 
-- [x] Skybolt v2 core PHP package (`packages/skybolt-core/`)
+- [x] Skybolt core PHP package (`packages/skybolt-core/`)
 - [x] Vite integration with manifest-based asset discovery
 - [x] ES Module client-side JavaScript (`skybolt-client.js`)
 - [x] Full working example with Timber template (`examples/timber-v2/`)
@@ -197,16 +197,16 @@ $skybolt = new Skybolt(
     inlineThreshold: 14336                                // 14KB inline threshold
 );
 
-// Critical CSS (always inlined, blocking)
-echo $skybolt->css('src/css/critical.css', inline: 'always');
+// Critical CSS (auto-optimized)
+echo $skybolt->css('src/css/critical.css');
 
 // Launch script (call once in <head>)
 echo $skybolt->launchScript();
 
-// Async CSS (localStorage or external link)
+// Async CSS (Service Worker cache)
 echo $skybolt->css('src/css/main.css');
 
-// Async JavaScript (localStorage or external script)
+// Async JavaScript (Service Worker cache)
 echo $skybolt->script('src/js/app.js');
 
 // Preload critical resources

@@ -5,7 +5,7 @@ High-performance asset management framework with intelligent client-side caching
 ## Features
 
 - 🚀 **Vite Integration** - Seamless integration with Vite's build pipeline
-- 💾 **Smart Caching** - localStorage-based caching with server-side tracking
+- 💾 **Service Worker Caching** - Unlimited cache storage via Cache API with automatic invalidation
 - ⚡ **Critical CSS** - Automatic critical CSS inlining for optimal First Contentful Paint
 - 🎯 **Asset Versioning** - Automatic cache invalidation via manifest-based versioning
 - 🌐 **CDN Ready** - Built-in CDN support with configurable base URLs
@@ -17,6 +17,20 @@ High-performance asset management framework with intelligent client-side caching
 composer require skybolt/skybolt-core
 ```
 
+### Service Worker Setup
+
+Create a PHP endpoint to serve the Service Worker:
+
+```php
+<?php
+// public/skybolt-sw.php
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Skybolt\ServiceWorkerEndpoint;
+
+ServiceWorkerEndpoint::serve();
+```
+
 ## Quick Start
 
 ```php
@@ -24,18 +38,15 @@ composer require skybolt/skybolt-core
 
 use Skybolt\Skybolt;
 
-session_start();
-
 $skybolt = new Skybolt(
     manifestPath: __DIR__ . '/dist/.vite/manifest.json',
-    basePath: '/assets/',
-    session: $_SESSION
+    basePath: '/assets/'
 );
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <?= $skybolt->css('src/critical.css', inline: 'always') ?>
+    <?= $skybolt->css('src/critical.css') ?>
     <?= $skybolt->launchScript() ?>
     <?= $skybolt->css('src/main.css') ?>
 </head>
@@ -80,34 +91,33 @@ export default defineConfig({
 
 ### Core Methods
 
-#### `css(string $entry, ?string $inline = null, bool $async = true): string`
+#### `css(string $entry, bool $async = true): string`
 
-Load CSS with flexible options.
+Load CSS with automatic optimization.
 
 **Parameters:**
 
 - `$entry` - Source file path (e.g., `'src/main.css'`)
-- `$inline` - Control inlining behavior:
-  - `'always'` - Force inline (critical CSS)
-  - `'never'` - Force external (no localStorage)
-  - `null` - Auto (default, uses localStorage cache)
 - `$async` - Whether to load asynchronously (default: `true`)
 
 **Examples:**
 
 ```php
-// Critical CSS (always inlined, blocking)
-<?= $skybolt->css('src/critical.css', inline: 'always') ?>
+// Critical CSS (auto-optimization, default)
+<?= $skybolt->css('src/critical.css') ?>
 
-// Async CSS (localStorage or CDN, default)
+// Main CSS (async, Service Worker cache)
 <?= $skybolt->css('src/main.css') ?>
 
-// Force external (no localStorage)
-<?= $skybolt->css('src/print.css', inline: 'never') ?>
-
-// Blocking CSS (traditional <link> tag)
+// Blocking CSS (traditional <link> tag, rare)
 <?= $skybolt->css('src/legacy.css', async: false) ?>
 ```
+
+**Auto-optimization behavior:**
+
+- **First visit**: Small files (≤50KB) are inlined, large files use external link with pre-caching
+- **Subsequent visits**: All files use external `<link>` tags served instantly from Service Worker cache
+- Configure threshold with `inlineThreshold` parameter (default: 51200 bytes)
 
 #### `script(string $entry, bool $async = true, bool $module = true): string`
 
@@ -149,11 +159,12 @@ Renders the Skybolt client-side cache controller. Call this once in the `<head>`
 
 ## How It Works
 
-1. **First Visit**: Assets are inlined in the HTML with cache instructions
-2. **Client-side**: JavaScript stores assets in localStorage and a version map in cookies
-3. **Subsequent Visits**: Server knows what client has cached, sends only meta tags
-4. **Client-side**: Assets load instantly from localStorage
-5. **Version Changes**: Automatic cache invalidation via manifest versions
+1. **First Visit**: Assets are inlined in the HTML with `data-sb-cache` attributes
+2. **Client-side**: Service Worker registers, JavaScript extracts and caches assets to Cache API
+3. **Version Tracking**: Client stores asset versions in cookies
+4. **Subsequent Visits**: Server sends standard `<link>`/`<script>` tags
+5. **Service Worker**: Intercepts requests and serves from Cache API (~1ms)
+6. **Version Changes**: Automatic cache invalidation via manifest versions
 
 ## License
 

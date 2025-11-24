@@ -9,11 +9,11 @@
     "packages-dev": [
         {
             "name": "skybolt/skybolt-core",
-            "version": "2.2.1",
+            "version": "2.3.1",
             "dist": {
                 "type": "path",
                 "url": "../../packages/skybolt-core",
-                "reference": "458c334a384a654a28b41c33fac9571f53b08b49"
+                "reference": "b0b45fa5130e0b5887f676a436db9dfb79a88df5"
             },
             "require": {
                 "php": "^8.3"

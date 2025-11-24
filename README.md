@@ -6,12 +6,12 @@ High-performance asset management framework with intelligent client-side caching
 
 ## Overview
 
-Skybolt is a two-part asset management system that dramatically improves web performance by intelligently caching assets in the client's browser localStorage. On repeat visits, assets load in milliseconds with zero HTTP requests.
+Skybolt is a two-part asset management system that dramatically improves web performance by intelligently caching assets using Service Workers and the Cache API. On repeat visits, assets load in milliseconds with zero HTTP requests.
 
 ### Key Features
 
 - 🚀 **Vite Integration** - Modern build pipeline with instant HMR
-- 💾 **Smart Caching** - localStorage-based caching with automatic invalidation
+- 💾 **Service Worker Caching** - Unlimited cache storage via Cache API with automatic invalidation
 - ⚡ **Critical CSS** - Automatic inlining for optimal First Contentful Paint
 - 🎯 **Asset Versioning** - Manifest-based versioning with content hashing
 - 🌐 **CDN Ready** - Built-in CDN support with configurable URLs
@@ -26,24 +26,37 @@ Skybolt is a two-part asset management system that dramatically improves web per
 composer require skybolt/skybolt-core
 ```
 
+### Service Worker Setup
+
+Create a PHP endpoint to serve the Service Worker:
+
+```php
+<?php
+// public/skybolt-sw.php
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Skybolt\ServiceWorkerEndpoint;
+
+ServiceWorkerEndpoint::serve();
+```
+
+This one-time setup file serves the Service Worker from the vendor package and automatically updates when you update Skybolt.
+
 ### Basic Usage
 
 ```php
 <?php
 use Skybolt\Skybolt;
 
-session_start();
-
 $skybolt = new Skybolt(
     manifestPath: __DIR__ . '/dist/.vite/manifest.json',
-    basePath: '/assets/',
-    session: $_SESSION
+    basePath: '/assets/'
 );
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <?= $skybolt->css('src/css/critical.css', inline: 'always') ?>
+    <?= $skybolt->css('src/css/critical.css') ?>
     <?= $skybolt->launchScript() ?>
     <?= $skybolt->css('src/css/main.css') ?>
 </head>
@@ -77,28 +90,31 @@ export default defineConfig({
 ## How It Works
 
 ### First Visit
-1. Client requests page
-2. Server checks session (empty - new user)
-3. Server inlines all assets in HTML
-4. Client stores assets in localStorage
-5. Client reports inventory to server
 
-### Repeat Visit
+1. Client requests page
+2. Server checks cookie (empty - new user)
+3. Server inlines small assets in HTML with `data-sb-cache` attributes
+4. Service Worker installs and activates
+5. Client extracts inlined assets and caches them directly to Cache API
+6. Client stores asset versions in cookie
+
+### Repeat Visit (Cached)
 
 1. Client requests page (sends cached asset versions)
-2. Server checks session (has inventory)
-3. Server sends `<meta>` tags instead of full assets
-4. Client loads assets from localStorage in ~40ms
-5. **Zero HTTP requests for CSS/JS**
+2. Server checks cookie (has asset versions)
+3. Server sends standard `<link>`/`<script>` tags
+4. Service Worker intercepts requests and serves from Cache API in ~1ms
+5. **Zero network requests for CSS/JS**
 
 ### After Asset Update
 
 1. Developer runs `bun run build`
 2. Vite generates new version hashes
 3. Client requests page
-4. Server detects version mismatch
+4. Server detects version mismatch via cookie
 5. Server inlines updated assets
-6. **Cache automatically invalidated**
+6. Client updates Cache API and cookie
+7. **Cache automatically invalidated**
 
 ## Repository Structure
 
@@ -110,8 +126,7 @@ skybolt/
 │       ├── assets/                # Client-side JavaScript
 │       ├── composer.json
 │       ├── README.md
-│       ├── ARCHITECTURE.md
-│       └── CHANGELOG.md
+│       └── ARCHITECTURE.md
 │
 ├── examples/
 │   ├── timber-v2/                 # Full working example
@@ -156,7 +171,6 @@ See [`examples/minimal-example/`](examples/minimal-example/) for the simplest po
 $skybolt = new Skybolt(
     manifestPath: '/path/to/.vite/manifest.json',  // Required
     basePath: '/assets/',                          // Default: '/assets/'
-    session: $_SESSION,                            // Required for caching
     cdnUrl: 'https://cdn.example.com',             // Optional
     devServer: 'http://localhost:5173',            // Optional (auto-detected)
     printComments: true,                           // Debug mode
@@ -168,12 +182,11 @@ $skybolt = new Skybolt(
 
 ### Core Methods
 
-- `css(string $entry, ?string $inline = null, bool $async = true): string`
-  - Load CSS with flexible options
-  - `inline: 'always'` - Force inline (critical CSS)
-  - `inline: 'never'` - Force external (no localStorage)
-  - `inline: null` - Auto (default, uses localStorage cache)
-  - `async: false` - Blocking `<link>` tag
+- `css(string $entry, bool $async = true): string`
+  - Load CSS with auto-optimization
+  - Automatically inlines small files (≤50KB by default) on first visit
+  - Uses Service Worker cache for subsequent visits
+  - `async: false` - Blocking `<link>` tag (rare)
 
 - `script(string $entry, bool $async = true, bool $module = true): string`
   - Load JavaScript with flexible options
@@ -201,10 +214,13 @@ $skybolt = new Skybolt(
 **Requirements:**
 
 - ES Modules support
-- localStorage support
+- Service Worker support
+- Cache API support
 - Fetch API
 
-**NO IE support** (ES Modules required)
+**NO IE support** (ES Modules and Service Workers required)
+
+**Graceful degradation:** If Service Workers are not available, Skybolt falls back to standard external asset loading.
 
 ## Performance Tips
 
@@ -239,6 +255,19 @@ $skybolt = new Skybolt(
 );
 ```
 
+Inspect the Service Worker cache in DevTools:
+
+```javascript
+// Browser console
+console.log(await caches.keys());  // List cache names
+const cache = await caches.open('skybolt-assets-v1');
+console.log(await cache.keys());    // List cached URLs
+
+// Or use the global skybolt object
+window.skybolt.clearCache();        // Clear cache without unregistering SW
+window.skybolt.selfDestruct();      // Full reset: clear cache + unregister SW + reload
+```
+
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for detailed future plans including:
@@ -257,7 +286,7 @@ See [ROADMAP.md](ROADMAP.md) for detailed future plans including:
 
 Inspired by:
 
-- [Paul Irish](https://paulirish.com/) - Initial concept of localStorage caching
+- [Paul Irish](https://paulirish.com/) - Initial concept of client-side asset caching
 - [Steve Souders](https://stevesouders.com/) - Web performance best practices
 - [Nicholas Zakas](https://humanwhocodes.com/) - Module patterns
 - [Addy Osmani](https://addyosmani.com/) - Performance optimization
@@ -270,7 +299,8 @@ MIT License - see [LICENSE](packages/skybolt-core/LICENSE)
 ## Related Projects
 
 - [Vite](https://vitejs.dev/) - Next generation frontend tooling
-- [Workbox](https://developer.chrome.com/docs/workbox/) - Service Worker libraries
+- [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) - MDN documentation
+- [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache) - MDN documentation
 
 ---
 
