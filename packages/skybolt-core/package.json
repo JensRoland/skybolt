@@ -1,6 +1,6 @@
 {
   "name": "@skybolt/core-assets",
-  "version": "2.0.0",
+  "version": "2.2.1",
   "private": true,
   "description": "Build tooling for Skybolt Core assets",
   "type": "module",

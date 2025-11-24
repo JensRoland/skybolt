@@ -23,18 +23,18 @@ This document outlines the planned features and improvements for Skybolt.
 - Minification: Custom PHP → esbuild/Lightning CSS (modern tooling)
 - Modern stack: PHP 8.3, ES Modules, Vite integration
 
-## Version 2.1 (Next) 🎯
+## Version 3.0 (Next) 🎯
 
 **Target:** Q4 2025 | **Focus:** Reusable Package for Distribution
 
 ### Planned Features
 
-- [ ] **Developer Experience** - Better encapsulation and interfaces for easy integration and deployment alongside existing applications
+- [X] **Developer Experience** - Better encapsulation and interfaces for easy integration and deployment alongside existing applications
 - [ ] **Simplified HTML meta syntax** - maybe `sb-load-script="boot:Fhwa4p"` and `sb-load-style="default:FFJg-n"` and `sb-load-fragment="header:PgpDxo"`
-- [ ] **Sessionless Caching** - Support for caching without session inventory since most 'modern' web devs are afraid of sessions, and we won't convince anyone to configure DB-backed sessions just for Skybolt. The session inventory was really just a half-baked attempt at working around the 4KB cookie limit (and not be so wasteful with cookie headers), but I was still using the cookie... to get around the cookie limit I could just use multiple cookies if needed. Could also use a better data packing method than JSON.
+- [X] **Sessionless Caching** - Support for caching without session inventory since most 'modern' web devs are afraid of sessions, and we won't convince anyone to configure DB-backed sessions just for Skybolt. The session inventory was really just a half-baked attempt at working around the 4KB cookie limit (and not be so wasteful with cookie headers), but I was still using the cookie... to get around the cookie limit I could just use multiple cookies if needed. Could also use a better data packing method than JSON.
 - [ ] **Composer Package** - Publish to Packagist for easy installation
 
-## Version 2.2 (Planned) 📦
+## Version 3.1 (Planned) 📦
 
 **Target:** Q1 2026 | **Focus:** Multi-Language/Framework Integrations
 
@@ -64,7 +64,7 @@ This document outlines the planned features and improvements for Skybolt.
   - Middleware for Gin
   - Template helpers
 
-## Version 3.0 (Future Vision) 🚀
+## Version 4.0 (Future Vision) 🚀
 
 **Target:** 2026 | **Focus:** Advanced Features
 

@@ -5,58 +5,74 @@ declare(strict_types=1);
 namespace Skybolt;
 
 /**
- * Manages client-side cache inventory using sessions and cookies
+ * Manages client-side cache inventory using cookies only
  *
- * Tracks which assets each client has cached in localStorage, enabling
- * the server to send only meta tags for cached assets instead of inlining them again.
+ * Tracks which assets each client has cached in localStorage using a compact
+ * cookie format. Supports multi-cookie spillover for large asset lists.
  */
 class CacheManager
 {
     private const COOKIE_NAME = 'sb_assets';
-    private const SESSION_KEY = 'skybolt_inventory';
-    private const INVENTORY_COOKIE = 'sb_inventory';
+    private const COOKIE_COUNT = 'sb_assets_count';
 
     private array $inventory = [];
 
-    public function __construct(
-        private array &$session
-    ) {
+    public function __construct()
+    {
         $this->loadInventory();
     }
 
     /**
-     * Load inventory from session and cookies
+     * Load inventory from cookies
      */
     private function loadInventory(): void
     {
-        // Load from session if available
-        if (isset($this->session[self::SESSION_KEY])) {
-            $this->inventory = $this->session[self::SESSION_KEY];
+        // Check if we have multiple cookies
+        $count = isset($_COOKIE[self::COOKIE_COUNT])
+            ? (int)$_COOKIE[self::COOKIE_COUNT]
+            : 1;
+
+        $data = '';
+
+        // Collect data from all cookies
+        for ($i = 1; $i <= $count; $i++) {
+            $cookieName = $i === 1
+                ? self::COOKIE_NAME
+                : self::COOKIE_NAME . '_' . $i;
+
+            if (isset($_COOKIE[$cookieName])) {
+                $data .= $_COOKIE[$cookieName];
+            }
+        }
+
+        if ($data === '') {
             return;
         }
 
-        // Otherwise, try to load from cookie
-        if (isset($_COOKIE[self::COOKIE_NAME])) {
-            try {
-                $this->inventory = json_decode(
-                    $_COOKIE[self::COOKIE_NAME],
-                    true,
-                    512,
-                    JSON_THROW_ON_ERROR
-                );
-                $this->saveInventory();
-            } catch (\JsonException) {
-                $this->inventory = [];
-            }
-        }
+        // Parse compact format: name:version,name2:version2
+        $this->inventory = $this->parseCookieData($data);
     }
 
     /**
-     * Save inventory to session
+     * Parse cookie data from compact format
+     *
+     * @param string $data Compact cookie string
+     * @return array<string, string> Asset name => version map
      */
-    private function saveInventory(): void
+    private function parseCookieData(string $data): array
     {
-        $this->session[self::SESSION_KEY] = $this->inventory;
+        $inventory = [];
+        $pairs = explode(',', $data);
+
+        foreach ($pairs as $pair) {
+            $parts = explode(':', $pair, 2);
+            if (count($parts) === 2) {
+                [$name, $version] = $parts;
+                $inventory[$name] = $version;
+            }
+        }
+
+        return $inventory;
     }
 
     /**
@@ -72,62 +88,25 @@ class CacheManager
     }
 
     /**
-     * Update inventory with asset versions from client
-     *
-     * Called when client reports its cache inventory
-     *
-     * @param array<string, string> $versions Map of asset names to version hashes
-     */
-    public function updateInventory(array $versions): void
-    {
-        $this->inventory = array_merge($this->inventory, $versions);
-        $this->saveInventory();
-    }
-
-    /**
-     * Mark that we need an inventory report from the client
-     *
-     * Sets a cookie that the client-side script will detect
-     */
-    public function requestInventory(): void
-    {
-        setcookie(
-            self::INVENTORY_COOKIE,
-            '1',
-            [
-                'expires' => 0, // Session cookie
-                'path' => '/',
-                'secure' => isset($_SERVER['HTTPS']),
-                'httponly' => false, // Needs to be readable by JS
-                'samesite' => 'Lax'
-            ]
-        );
-    }
-
-    /**
-     * Check if an inventory report was requested
-     */
-    public function isInventoryRequested(): bool
-    {
-        return isset($_COOKIE[self::INVENTORY_COOKIE]);
-    }
-
-    /**
      * Clear inventory (force re-cache)
+     *
+     * Clears server-side inventory and deletes client cookies
      */
     public function clear(): void
     {
         $this->inventory = [];
-        unset($this->session[self::SESSION_KEY]);
 
-        setcookie(
-            self::COOKIE_NAME,
-            '',
-            [
-                'expires' => time() - 3600,
-                'path' => '/'
-            ]
-        );
+        // Delete all cookies (main + overflow + count)
+        setcookie(self::COOKIE_NAME, '', ['expires' => time() - 3600, 'path' => '/']);
+        setcookie(self::COOKIE_COUNT, '', ['expires' => time() - 3600, 'path' => '/']);
+
+        // Clean up potential overflow cookies
+        for ($i = 2; $i <= 10; $i++) {
+            $cookieName = self::COOKIE_NAME . '_' . $i;
+            if (isset($_COOKIE[$cookieName])) {
+                setcookie($cookieName, '', ['expires' => time() - 3600, 'path' => '/']);
+            }
+        }
     }
 
     /**
@@ -149,34 +128,5 @@ class CacheManager
             'total_assets' => count($this->inventory),
             'assets' => $this->inventory,
         ];
-    }
-
-    /**
-     * Set the "loader cached" flag
-     *
-     * Indicates that the Skybolt loader script itself is in browser cache
-     */
-    public function setLoaderCached(string $version): void
-    {
-        setcookie(
-            'sb_loader',
-            $version,
-            [
-                'expires' => time() + (86400 * 30), // 30 days
-                'path' => '/',
-                'secure' => isset($_SERVER['HTTPS']),
-                'httponly' => true,
-                'samesite' => 'Lax'
-            ]
-        );
-    }
-
-    /**
-     * Check if loader script is cached
-     */
-    public function isLoaderCached(string $version): bool
-    {
-        return isset($_COOKIE['sb_loader'])
-            && $_COOKIE['sb_loader'] === $version;
     }
 }

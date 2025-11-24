@@ -12,7 +12,8 @@ class SkyboltClient {
         this.versions = {};
         this.cacheKey = 'sb_cache';
         this.cookieName = 'sb_assets';
-        this.inventoryCookie = 'sb_inventory';
+        this.cookieCount = 'sb_assets_count';
+        this.cookieMaxSize = 4090;
         this.attrPrefix = 'data-sb-';
 
         this.init();
@@ -56,6 +57,11 @@ class SkyboltClient {
             const cached = localStorage.getItem(this.cacheKey);
             if (cached) {
                 this.assetMap = JSON.parse(cached);
+
+                // Rebuild versions map from loaded assets
+                for (const [name, item] of Object.entries(this.assetMap)) {
+                    this.versions[name] = item.version;
+                }
             }
         } catch (err) {
             console.warn('Skybolt: Failed to load cache', err);
@@ -84,7 +90,7 @@ class SkyboltClient {
         // Store new assets
         this.storeAssets();
 
-        // Load async assets
+        // Load async assets (no caching)
         this.loadAsyncAssets();
     }
 
@@ -131,6 +137,7 @@ class SkyboltClient {
             const type = meta.getAttribute(`${this.attrPrefix}type`);
             const name = meta.getAttribute(`${this.attrPrefix}name`);
             const version = meta.getAttribute(`${this.attrPrefix}version`);
+            const isModule = meta.getAttribute(`${this.attrPrefix}module`) !== 'false';
 
             const item = this.assetMap[name];
 
@@ -146,8 +153,8 @@ class SkyboltClient {
             element.setAttribute(`${this.attrPrefix}name`, name);
             element.setAttribute(`${this.attrPrefix}state`, 'loaded');
 
-            // Scripts should be type="module" for ES module support
-            if (type === 'script') {
+            // Set script type based on module attribute
+            if (type === 'script' && isModule) {
                 element.type = 'module';
             }
 
@@ -156,7 +163,7 @@ class SkyboltClient {
     }
 
     /**
-     * Load async assets (external URLs)
+     * Load async assets (external URLs, no caching)
      */
     loadAsyncAssets() {
         const metaTags = Array.from(
@@ -166,13 +173,14 @@ class SkyboltClient {
         metaTags.forEach(meta => {
             const type = meta.getAttribute(`${this.attrPrefix}type`);
             const src = meta.getAttribute(`${this.attrPrefix}src`);
+            const isModule = meta.getAttribute(`${this.attrPrefix}module`) !== 'false';
 
             meta.remove();
 
             // Defer async assets to window.load
             window.addEventListener('load', () => {
                 if (type === 'script') {
-                    this.loadScript(src);
+                    this.loadScript(src, isModule);
                 } else if (type === 'style') {
                     this.loadStylesheet(src);
                 }
@@ -183,9 +191,11 @@ class SkyboltClient {
     /**
      * Load external script
      */
-    loadScript(src) {
+    loadScript(src, isModule) {
         const script = document.createElement('script');
-        script.type = 'module';
+        if (isModule) {
+            script.type = 'module';
+        }
         script.async = true;
         script.src = src;
         document.head.appendChild(script);
@@ -202,35 +212,87 @@ class SkyboltClient {
     }
 
     /**
-     * Update asset versions cookie
+     * Encode versions to compact cookie format
+     * Format: name:version,name2:version2
+     */
+    encodeVersions() {
+        const pairs = [];
+        for (const [name, version] of Object.entries(this.versions)) {
+            pairs.push(`${name}:${version}`);
+        }
+        return pairs.join(',');
+    }
+
+    /**
+     * Split cookie data into chunks
+     */
+    splitCookieData(data) {
+        if (data.length <= this.cookieMaxSize) {
+            return [data];
+        }
+
+        const chunks = [];
+        let offset = 0;
+
+        while (offset < data.length) {
+            let chunkSize = Math.min(this.cookieMaxSize, data.length - offset);
+
+            // Try to break at a comma if not at the end
+            if (offset + chunkSize < data.length) {
+                const chunk = data.substring(offset, offset + chunkSize);
+                const lastComma = chunk.lastIndexOf(',');
+                if (lastComma > 0) {
+                    chunkSize = lastComma + 1; // Include the comma
+                }
+            }
+
+            chunks.push(data.substring(offset, offset + chunkSize));
+            offset += chunkSize;
+        }
+
+        return chunks;
+    }
+
+    /**
+     * Update asset versions cookies
      */
     updateCookie() {
-        const value = JSON.stringify(this.versions);
-        document.cookie = `${this.cookieName}=${value}; path=/; SameSite=Lax`;
-    }
+        const data = this.encodeVersions();
+        const chunks = this.splitCookieData(data);
+        const count = chunks.length;
 
-    /**
-     * Report inventory to server
-     */
-    reportInventory() {
-        this.updateCookie();
+        console.log('Skybolt: Updating cookies with', Object.keys(this.versions).length, 'assets');
 
-        // Use beacon API if available, otherwise Image
-        const url = `${this.config.basePath}inventory.php`;
+        // Write each cookie chunk
+        for (let i = 0; i < count; i++) {
+            const cookieName = i === 0
+                ? this.cookieName
+                : `${this.cookieName}_${i + 1}`;
 
-        if (navigator.sendBeacon) {
-            navigator.sendBeacon(url, JSON.stringify(this.versions));
-        } else {
-            // Fallback: image beacon
-            new Image().src = url;
+            document.cookie = `${cookieName}=${chunks[i]}; path=/; max-age=31536000; SameSite=Lax`;
+            console.log('Skybolt: Set cookie', cookieName, '=', chunks[i].substring(0, 50) + '...');
         }
+
+        // Write count cookie if we have multiple chunks
+        if (count > 1) {
+            document.cookie = `${this.cookieCount}=${count}; path=/; max-age=31536000; SameSite=Lax`;
+        } else {
+            // Clear count cookie
+            document.cookie = `${this.cookieCount}=; path=/; max-age=0`;
+        }
+
+        // Clean up extra cookies
+        this.cleanupExtraCookies(count);
     }
 
     /**
-     * Check if inventory report is requested
+     * Clean up extra cookies from previous runs
      */
-    shouldReportInventory() {
-        return document.cookie.includes(this.inventoryCookie);
+    cleanupExtraCookies(keepCount) {
+        for (let i = keepCount + 1; i <= 10; i++) {
+            const cookieName = `${this.cookieName}_${i}`;
+            document.cookie = `${cookieName}=; path=/; max-age=0`;
+        }
     }
 
     /**
@@ -239,12 +301,6 @@ class SkyboltClient {
     onDomReady() {
         // Process any remaining assets
         this.processAssets();
-
-        // Report inventory if requested
-        if (this.shouldReportInventory()) {
-            // Delay to not impact page load
-            setTimeout(() => this.reportInventory(), 2000);
-        }
     }
 
     /**
@@ -253,7 +309,9 @@ class SkyboltClient {
     selfDestruct() {
         console.warn('Skybolt: Cache corrupted, clearing and reloading');
         localStorage.removeItem(this.cacheKey);
-        document.cookie = `${this.cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        document.cookie = `${this.cookieName}=; path=/; max-age=0`;
+        document.cookie = `${this.cookieCount}=; path=/; max-age=0`;
+        this.cleanupExtraCookies(0);
         location.reload();
     }
 }

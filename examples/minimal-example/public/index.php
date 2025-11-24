@@ -17,7 +17,6 @@ session_start();
 $skybolt = new Skybolt(
     manifestPath: __DIR__ . '/../dist/.vite/manifest.json',
     basePath: '/', // Vite outputs to dist/assets/, so we just need root
-    session: $_SESSION,
     cdnUrl: null, // Set to CDN URL in production
     devServer: null, // Vite dev server (set to http://localhost:5173 for HMR)
     printComments: true, // Enable debug comments

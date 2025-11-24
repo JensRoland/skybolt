@@ -39,7 +39,7 @@
             "authors": [
                 {
                     "name": "Jens Roland",
-                    "email": "mail@jensroland.com",
+                    "email": "mail@jensroland.com"
                 }
             ],
             "description": "High-performance asset management framework with intelligent client-side caching",

@@ -26,7 +26,7 @@ timber/0.4.0/
 │       │   ├── Skybolt.php        # Main API facade
 │       │   ├── Config.php         # Immutable configuration
 │       │   ├── ManifestReader.php # Vite manifest parser
-│       │   ├── CacheManager.php   # Session/cookie cache tracking
+│       │   ├── CacheManager.php   # Cookie-based cache tracking
 │       │   └── AssetRenderer.php  # HTML tag generation
 │       ├── assets/
 │       │   └── skybolt-client.js  # Client-side ES module
@@ -38,8 +38,7 @@ timber/0.4.0/
 ├── examples/
 │   ├── timber-v2/                 # Complete working example (Timber template)
 │   │   ├── public/
-│   │   │   ├── index.php          # Demo site using Skybolt v2
-│   │   │   └── inventory.php      # Cache inventory endpoint
+│   │   │   └── index.php          # Demo site using Skybolt v2
 │   │   ├── src/
 │   │   │   ├── css/               # CSS source files
 │   │   │   └── js/                # JS source files
@@ -95,7 +94,7 @@ Skybolt is a **two-part system**:
 | -------------- | -------------------- | --------------------------------------------------------- |
 | Config         | `Config.php`         | Immutable configuration using PHP 8.3 readonly properties |
 | ManifestReader | `ManifestReader.php` | Reads Vite's `manifest.json`, extracts version hashes     |
-| CacheManager   | `CacheManager.php`   | Tracks client cache inventory via sessions/cookies        |
+| CacheManager   | `CacheManager.php`   | Tracks client cache inventory via cookies only            |
 | AssetRenderer  | `AssetRenderer.php`  | Generates HTML tags with caching intelligence             |
 | Skybolt        | `Skybolt.php`        | Main API facade, provides simple API for templates        |
 | SkyboltClient  | `skybolt-client.js`  | Client-side ES module for cache management                |
@@ -119,16 +118,15 @@ Skybolt is a **two-part system**:
 #### First Visit
 
 1. Client → Server: GET /index.php
-2. Server checks session (empty - new user)
+2. Server checks cookie (empty - new user)
 3. Server inlines all assets in HTML
 4. Client stores assets in localStorage
-5. Client reports inventory via beacon to /inventory.php
-6. Server updates session with asset versions
+5. Client writes asset versions to cookie
 
 #### Repeat Visit (Cached)
 
-1. Client → Server: GET /index.php (with cookie containing versions)
-2. Server checks session (has inventory)
+1. Client → Server: GET /index.php (with cookie containing asset versions)
+2. Server reads cookie and parses asset inventory
 3. Server sends `<meta>` tags for cached assets
 4. Client loads from localStorage (~40ms)
 5. **Zero HTTP requests for CSS/JS**
@@ -138,9 +136,9 @@ Skybolt is a **two-part system**:
 1. Developer runs `bun run build`
 2. Vite generates new version hashes
 3. Client requests page
-4. Server detects version mismatch
+4. Server detects version mismatch (via cookie)
 5. Server inlines updated assets
-6. Client updates localStorage (automatic cache invalidation)
+6. Client updates localStorage and cookie (automatic cache invalidation)
 
 ## Common Tasks
 
@@ -190,12 +188,9 @@ bun run build
 ```php
 use Skybolt\Skybolt;
 
-session_start();
-
 $skybolt = new Skybolt(
     manifestPath: __DIR__ . '/dist/.vite/manifest.json',  // Required
     basePath: '/assets/',                                 // Default: '/assets/'
-    session: $_SESSION,                                   // Required for caching
     cdnUrl: 'https://cdn.example.com',                    // Optional
     devServer: 'http://localhost:5173',                   // Optional (auto-detected)
     printComments: true,                                  // Debug mode
@@ -365,5 +360,5 @@ console.log(localStorage.getItem('sb_cache'));
 ---
 
 **Last Updated**: November 23, 2025
-**Status**: 🚧 Active Development (v2.0.0)
+**Status**: 🚧 Active Development (v2.1.0)
 **Main Branch**: `main`

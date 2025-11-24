@@ -24,19 +24,19 @@ class AssetRenderer
     ) {}
 
     /**
-     * Render critical CSS (inline, synchronous)
+     * Render critical CSS (inline, synchronous, no caching)
      */
     public function renderCriticalCSS(string $entry): string
     {
         $content = $this->manifest->getContent($entry);
-        $version = $this->manifest->getVersion($entry);
 
-        if ($content === null || $version === null) {
+        if ($content === null) {
             return $this->renderComment("Critical CSS not found: {$entry}");
         }
 
-        // Always inline critical CSS (it's critical!)
-        return $this->buildInlineStyle($entry, $version, $content, store: true);
+        // Always inline critical CSS - no Skybolt attributes since it's always inlined
+        $comment = $this->renderComment("Critical CSS inlined by Skybolt");
+        return $comment . "\n" . $this->buildTag('style', [], $content);
     }
 
     /**
@@ -62,15 +62,15 @@ class AssetRenderer
             return $this->buildAsyncStyleLink($url ?? '');
         }
 
-        // Client doesn't have it - inline it
+        // Client doesn't have it - inline it for caching (if not too large)
         $content = $this->manifest->getContent($entry);
 
         if ($content !== null && strlen($content) <= $this->config->inlineThreshold) {
-            // Small enough to inline
+            // Small enough to inline - inline with store attribute
             return $this->buildInlineStyle($entry, $version, $content, store: true);
         }
 
-        // Too large or in dev mode - use async link
+        // Too large to inline or content not available - use external link (no caching)
         $url = $this->manifest->getUrl($entry);
         return $this->buildAsyncStyleLink($url ?? '');
     }
@@ -106,18 +106,18 @@ class AssetRenderer
         // Check if client has it cached
         if ($this->cache->hasLatestVersion($entry, $version)) {
             // Client has it - send meta tag for loading from localStorage
-            return $this->buildLoadMeta('script', $entry, $version);
+            return $this->buildLoadMeta('script', $entry, $version, $isModule);
         }
 
-        // Client doesn't have it - inline it
+        // Client doesn't have it - inline it for caching (if not too large)
         $content = $this->manifest->getContent($entry);
 
         if ($content !== null && strlen($content) <= $this->config->inlineThreshold) {
-            // Small enough to inline
+            // Small enough to inline - inline with store attribute
             return $this->buildInlineScript($entry, $version, $content, store: true, isModule: $isModule);
         }
 
-        // Too large or in dev mode - use async script tag
+        // Too large to inline or content not available - use external script (no caching)
         $url = $this->manifest->getUrl($entry);
         return $this->buildAsyncScriptTag($url ?? '', $isModule);
     }
@@ -196,21 +196,16 @@ class AssetRenderer
         // Add version comment if debug mode is enabled
         $versionComment = $this->renderComment("Skybolt v{$this->version}");
 
-        // Check if client has the loader cached in browser cache
-        if ($this->cache->isLoaderCached($loaderHash)) {
-            // Use external script tag
-            $scriptUrl = $this->config->getAssetUrl('skybolt-client.js');
-            return $versionComment . "\n" . $configMeta . "\n" . $this->buildScriptTag($scriptUrl);
-        }
-
-        // Inline the loader (don't store in localStorage - it's too meta!)
-        return $versionComment . "\n" . $configMeta . "\n" . $this->buildInlineScript(
+        // Always inline the loader script
+        $inlineScript = $this->buildInlineScript(
             'skybolt-loader',
             $loaderHash,
             $loaderContent,
             store: false,
             isModule: true
         );
+
+        return $versionComment . "\n" . $configMeta . "\n" . $inlineScript;
     }
 
     /**
@@ -284,27 +279,34 @@ class AssetRenderer
     /**
      * Build <meta> tag for loading from localStorage
      */
-    private function buildLoadMeta(string $type, string $name, string $version): string
+    private function buildLoadMeta(string $type, string $name, string $version, bool $isModule = true): string
     {
-        $comment = $this->renderComment("Cached by Skybolt");
-        return $comment . ' ' . $this->buildTag('meta', [
+        $attrs = [
             self::ATTR_PREFIX . 'type' => $type,
             self::ATTR_PREFIX . 'name' => $name,
             self::ATTR_PREFIX . 'version' => $version,
             self::ATTR_PREFIX . 'state' => 'load',
-        ]);
+        ];
+
+        // Only add module attribute for scripts
+        if ($type === 'script') {
+            $attrs[self::ATTR_PREFIX . 'module'] = $isModule ? 'true' : 'false';
+        }
+
+        $comment = $this->renderComment("Cached by Skybolt");
+        return $comment . ' ' . $this->buildTag('meta', $attrs);
     }
 
     /**
-     * Build async <meta> tag for lazy loading
+     * Build async <meta> tag for lazy loading (no caching)
      */
-    private function buildAsyncMeta(string $type, string $url): string
+    private function buildAsyncMeta(string $type, string $url, array $attributes = []): string
     {
-        return $this->buildTag('meta', [
-            self::ATTR_PREFIX . 'type' => $type,
-            self::ATTR_PREFIX . 'src' => $url,
-            self::ATTR_PREFIX . 'state' => 'load-async',
-        ]);
+        $attributes[self::ATTR_PREFIX . 'type'] = $type;
+        $attributes[self::ATTR_PREFIX . 'src'] = $url;
+        $attributes[self::ATTR_PREFIX . 'state'] = 'load-async';
+
+        return $this->buildTag('meta', $attributes);
     }
 
     /**
@@ -314,7 +316,7 @@ class AssetRenderer
     {
         // For now, use meta tags for async loading (handled by client)
         // We could extend this to add module type to the meta tag if needed
-        return $this->buildAsyncMeta('script', $src);
+        return $this->buildAsyncMeta('script', $src, [self::ATTR_PREFIX . 'module' => $isModule ? 'true' : 'false']);
     }
 
     /**

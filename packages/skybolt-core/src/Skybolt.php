@@ -11,7 +11,7 @@ namespace Skybolt;
  */
 class Skybolt
 {
-    public const VERSION = '2.0.0';
+    public const VERSION = '2.2.1';
 
     private Config $config;
     private ManifestReader $manifest;
@@ -23,20 +23,18 @@ class Skybolt
      *
      * @param string $manifestPath Absolute path to Vite manifest.json
      * @param string $basePath Base URL path for assets (e.g., '/assets/')
-     * @param array $session Reference to session array (e.g., $_SESSION)
      * @param string|null $cdnUrl Optional CDN URL prefix
      * @param string|null $devServer Optional Vite dev server URL
      * @param bool $printComments Whether to print debug comments
-     * @param int $inlineThreshold Max file size to inline (bytes)
+     * @param int $inlineThreshold Max file size to inline (bytes, default 50KB)
      */
     public function __construct(
         string $manifestPath,
         string $basePath = '/assets/',
-        array &$session = [],
         ?string $cdnUrl = null,
         ?string $devServer = null,
         bool $printComments = false,
-        int $inlineThreshold = 14336,
+        int $inlineThreshold = 51200, // 50KB
     ) {
         $this->config = new Config(
             manifestPath: $manifestPath,
@@ -48,13 +46,8 @@ class Skybolt
         );
 
         $this->manifest = new ManifestReader($this->config);
-        $this->cache = new CacheManager($session);
+        $this->cache = new CacheManager();
         $this->renderer = new AssetRenderer($this->config, $this->manifest, $this->cache, self::VERSION);
-
-        // Request inventory update if needed
-        if (!$this->cache->isInventoryRequested()) {
-            $this->cache->requestInventory();
-        }
     }
 
     /**
@@ -122,31 +115,6 @@ class Skybolt
         return $this->renderer->renderLaunchScript();
     }
 
-    /**
-     * Handle inventory update from client
-     *
-     * Call this from your inventory endpoint
-     *
-     * @param array<string, string>|null $versions Asset versions from client
-     */
-    public function handleInventoryUpdate(?array $versions = null): void
-    {
-        if ($versions === null) {
-            // Try to get from POST body
-            $input = file_get_contents('php://input');
-            if ($input !== false && $input !== '') {
-                try {
-                    $versions = json_decode($input, true, 512, JSON_THROW_ON_ERROR);
-                } catch (\JsonException) {
-                    return;
-                }
-            }
-        }
-
-        if (is_array($versions)) {
-            $this->cache->updateInventory($versions);
-        }
-    }
 
     /**
      * Get cache statistics

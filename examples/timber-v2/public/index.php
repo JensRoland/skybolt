@@ -1,5 +1,4 @@
 <?php
-    session_start();
     require_once __DIR__ . '/../vendor/autoload.php';
 
     use Skybolt\Skybolt;
@@ -8,7 +7,6 @@
     $skybolt = new Skybolt(
         manifestPath: __DIR__ . '/../dist/.vite/manifest.json',
         basePath: '/',
-        session: $_SESSION,
         printComments: true
     );
 
@@ -37,7 +35,7 @@
     <?= $skybolt->css('src/css/fonts-inline.css') ?>
 
     <?php // Concatenated JavaScript bundle (legacy jQuery code - not a module) ?>
-    <?= $skybolt->script('src/js/scripts.js', async: false, module: false) ?>
+    <?= $skybolt->script('src/js/scripts.js', module: false) ?>
 </head>
 <body>
 

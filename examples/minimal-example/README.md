@@ -17,9 +17,6 @@ bun install
 ### 2. Build Assets
 
 ```bash
-# Development build with watch mode
-bun run dev
-
 # Production build
 bun run build
 ```
@@ -29,9 +26,6 @@ bun run build
 ```bash
 # Using PHP's built-in server
 php -S localhost:8000 -t public
-
-# Or use Docker (from parent directory)
-make serve
 ```
 
 Then visit: http://localhost:8000
@@ -48,7 +42,6 @@ minimal-example/
 │       └── app.js          # Main JavaScript
 ├── public/
 │   ├── index.php           # Entry point
-│   └── inventory.php       # Skybolt inventory endpoint
 ├── dist/                   # Vite build output (generated)
 │   ├── .vite/
 │   │   └── manifest.json   # Asset manifest
@@ -65,10 +58,3 @@ minimal-example/
 3. **Client**: JavaScript stores assets in localStorage
 4. **Subsequent Visits**: Assets loaded instantly from localStorage
 5. **Updates**: Version changes trigger automatic cache invalidation
-
-## Performance
-
-- ⚡ First Contentful Paint: ~200ms (critical CSS inlined)
-- 🚀 Repeat visit asset load: <50ms (localStorage)
-- 📉 92% reduction in asset transfer on repeat visits
-- 💯 Lighthouse Performance Score: 100

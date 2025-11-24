@@ -52,9 +52,8 @@ $skybolt = new Skybolt(
 $skybolt = new Skybolt(
     manifestPath: '/path/to/.vite/manifest.json',  // Required: Vite manifest file
     basePath: '/assets/',                          // Base URL path for assets
-    cdnUrl: 'https://cdn.example.com',            // Optional: CDN URL prefix
-    session: $_SESSION,                            // Session array for cache tracking
-    devServer: 'http://localhost:5173',           // Optional: Vite dev server URL
+    cdnUrl: 'https://cdn.example.com',             // Optional: CDN URL prefix
+    devServer: 'http://localhost:5173',            // Optional: Vite dev server URL
 );
 ```
 
@@ -151,26 +150,10 @@ Renders the Skybolt client-side cache controller. Call this once in the `<head>`
 ## How It Works
 
 1. **First Visit**: Assets are inlined in the HTML with cache instructions
-2. **Client-side**: JavaScript stores assets in localStorage and reports inventory to server
+2. **Client-side**: JavaScript stores assets in localStorage and a version map in cookies
 3. **Subsequent Visits**: Server knows what client has cached, sends only meta tags
-4. **Client-side**: Assets loaded instantly from localStorage
+4. **Client-side**: Assets load instantly from localStorage
 5. **Version Changes**: Automatic cache invalidation via manifest versions
-
-## Performance
-
-Typical improvements with Skybolt:
-- ⚡ 90% reduction in CSS/JS load time on repeat visits
-- 📉 92% reduction in asset transfer size
-- 🎯 Lighthouse score of 100 for Performance
-- 🚀 Sub-50ms asset load times from localStorage
-
-## Browser Support
-
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
-
-Requires ES modules and localStorage support.
 
 ## License
 
