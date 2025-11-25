@@ -40,7 +40,7 @@
     },
     "minimum-stability": "stable",
     "support": {
-        "issues": "https://github.com/JensRoland/skybolt/issues",
-        "source": "https://github.com/JensRoland/skybolt/tree/master/packages/php"
+        "issues": "https://github.com/JensRoland/skybolt-php/issues",
+        "source": "https://github.com/JensRoland/skybolt-php"
     }
 }
