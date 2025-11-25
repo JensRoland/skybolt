@@ -25,13 +25,13 @@ $sb = new Skybolt\Skybolt(__DIR__ . '/dist/.skybolt/render-map.json');
 <!DOCTYPE html>
 <html>
 <head>
-    <?= $sb->css('src/css/critical.css') ?>
-    <?= $sb->launchScript() ?>
-    <?= $sb->css('src/css/main.css') ?>
+    <?= $sb->css('src/css/critical.css') ?> 
+    <?= $sb->launchScript() ?> 
+    <?= $sb->css('src/css/main.css') ?> 
 </head>
 <body>
     <h1>Hello Skybolt!</h1>
-    <?= $sb->script('src/js/app.js') ?>
+    <?= $sb->script('src/js/app.js') ?> 
 </body>
 </html>
 ```
