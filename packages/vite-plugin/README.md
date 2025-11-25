@@ -1,6 +1,6 @@
 # @skybolt/vite-plugin
 
-Vite plugin for [Skybolt](https://github.com/skybolt/skybolt) - High-performance asset caching for multi-page applications.
+Vite plugin for [Skybolt](https://github.com/JensRoland/skybolt) - High-performance asset caching for multi-page applications.
 
 ## What is Skybolt?
 
