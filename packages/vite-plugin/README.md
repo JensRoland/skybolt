@@ -66,6 +66,9 @@ Install a Skybolt adapter for your language:
 - **PHP:** `composer require jensroland/skybolt-php`
 - **Ruby:** `gem install skybolt-ruby`
 - **Python:** `pip install skybolt-python`
+- **Go:** `go get github.com/JensRoland/skybolt-go`
+
+Then, use the adapter to include Skybolt-managed assets in your HTML.
 
 Example (PHP):
 
