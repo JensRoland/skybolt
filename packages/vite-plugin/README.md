@@ -135,7 +135,7 @@ skybolt({
 
 1. Server reads `render-map.json`
 2. Server checks cookie (empty - new visitor)
-3. Server inlines assets with `data-sb-*` attributes
+3. Server inlines assets with `sb-*` attributes
 4. Browser receives HTML with inlined CSS/JS
 5. Skybolt client extracts content and caches via Service Worker
 6. Client writes asset versions to cookie

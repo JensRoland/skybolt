@@ -4,7 +4,7 @@
  * Registers Service Worker and coordinates cache state via cookies.
  * Extracts inlined assets and stores them in Cache API.
  *
- * @version 3.0.0
+ * @version 3.1.0
  */
 
 const CACHE_NAME = 'skybolt-v1'
@@ -87,12 +87,12 @@ class SkyboltClient {
    * Process all inlined assets and cache them
    */
   processInlinedAssets() {
-    const elements = document.querySelectorAll('[data-sb-cache]')
+    const elements = document.querySelectorAll('[sb-asset]')
     console.log(`[Skybolt] Found ${elements.length} assets to cache`)
 
     elements.forEach(el => {
-      const cacheInfo = el.getAttribute('data-sb-cache')
-      const url = el.getAttribute('data-sb-url')
+      const cacheInfo = el.getAttribute('sb-asset')
+      const url = el.getAttribute('sb-url')
 
       if (!cacheInfo || !url) {
         console.warn('[Skybolt] Invalid cache attributes on element:', el)
@@ -271,8 +271,8 @@ class SkyboltClient {
   handleNoServiceWorker() {
     console.warn('[Skybolt] Falling back to external assets')
 
-    document.querySelectorAll('[data-sb-cache]').forEach(el => {
-      const url = el.getAttribute('data-sb-url')
+    document.querySelectorAll('[sb-asset]').forEach(el => {
+      const url = el.getAttribute('sb-url')
       if (!url) return
 
       if (el.tagName === 'STYLE') {

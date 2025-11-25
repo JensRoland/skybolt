@@ -2,7 +2,7 @@
 
 High-performance asset caching for multi-page applications.
 
-**Version:** 3.0.0 | **Status:** Beta | **License:** MIT
+**Version:** 3.1.0 | **Status:** Beta | **License:** MIT
 
 ## What is Skybolt?
 
@@ -106,7 +106,8 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 
 ## Examples
 
-- [Minimal Example](examples/minimal/) - Basic PHP setup
+- [Minimal Example](examples/php-vanilla/) - Basic PHP setup
+- [Portfolio Example](examples/php-portfolio-timber/) - Full-featured PHP with Timber
 
 ## Architecture
 

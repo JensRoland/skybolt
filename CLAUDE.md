@@ -15,7 +15,7 @@ Skybolt v3 uses a **build-time render map** approach:
 3. **Client Script** caches inlined assets and manages Service Worker
 4. **Service Worker** serves cached assets with ~1ms response time
 
-This architecture enables trivial multi-language support - adapters are ~50-80 lines of code.
+This architecture enables trivial multi-language support - adapters are ~50-150 lines of code.
 
 ## Repository Structure
 
@@ -33,9 +33,8 @@ skybolt/
 │       └── composer.json
 │
 ├── examples/
-│   └── minimal/               # Minimal PHP example
-│
-├── v2-legacy/                 # Old v2 code (for reference)
+│   ├── php-portfolio-timber/  # Full-featured PHP example
+│   └── php-vanilla/           # Minimal PHP example
 │
 ├── README.md
 └── CLAUDE.md                  # This file
@@ -58,7 +57,7 @@ skybolt/
 
 1. Server loads render-map.json
 2. Server checks `sb_assets` cookie (empty)
-3. Server inlines assets with `data-sb-cache` attributes
+3. Server inlines assets with `sb-asset` attributes
 4. Browser receives HTML with inlined CSS/JS
 5. Client script registers Service Worker
 6. Client extracts inlined content → Cache API
@@ -116,7 +115,7 @@ Client cache state is tracked via cookies because:
 ### Running the Example
 
 ```bash
-cd examples/minimal
+cd examples/php-vanilla
 
 # Install dependencies
 npm install
@@ -204,14 +203,14 @@ await skybolt.selfDestruct()  // Clear all, unregister SW, reload
 }
 ```
 
-## Data Attributes
+## HTML Attributes
 
 Inlined assets use these attributes:
 
 | Attribute | Purpose | Example |
 |-----------|---------|---------|
-| `data-sb-cache` | Asset ID + hash | `src/css/main.css:Pw3rT8vL` |
-| `data-sb-url` | Cache key URL | `/assets/main-Pw3rT8vL.css` |
+| `sb-asset` | Asset ID + hash | `src/css/main.css:Pw3rT8vL` |
+| `sb-url` | Cache key URL | `/assets/main-Pw3rT8vL.css` |
 
 ## Cookie Format
 
@@ -253,4 +252,3 @@ await skybolt.selfDestruct()
 ---
 
 **Last Updated:** November 2025
-**Version:** 3.0.0
