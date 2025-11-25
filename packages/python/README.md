@@ -5,13 +5,13 @@ High-performance asset caching for multi-page applications.
 ## Installation
 
 ```bash
-pip install skybolt
+pip install skybolt-python
 ```
 
 Or with uv:
 
 ```bash
-uv add skybolt
+uv add skybolt-python
 ```
 
 ## Usage

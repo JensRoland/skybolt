@@ -4,6 +4,8 @@ High-performance asset caching for multi-page applications.
 
 **Version:** 3.1.0 | **Status:** Beta | **License:** MIT
 
+**Works with:** PHP, Python, Ruby, Go (and easy to add more)
+
 ## What is Skybolt?
 
 Skybolt eliminates HTTP requests for cached assets on repeat visits. By combining Service Workers with intelligent server-side rendering, assets load from cache in ~1ms with zero network overhead.
@@ -60,7 +62,10 @@ export default defineConfig({
 
 ### 2. Install Server Adapter
 
-**PHP:**
+Choose your language:
+
+<details>
+<summary><strong>PHP</strong></summary>
 
 ```bash
 composer require skybolt/skybolt
@@ -80,6 +85,86 @@ $sb = new Skybolt\Skybolt(__DIR__ . '/dist/.skybolt/render-map.json');
 </body>
 ```
 
+</details>
+
+<details>
+<summary><strong>Python</strong></summary>
+
+```bash
+pip install skybolt-python
+# or: uv add skybolt-python
+```
+
+```python
+from skybolt import Skybolt
+
+sb = Skybolt("dist/.skybolt/render-map.json", cookies=request.cookies)
+```
+
+```html
+<head>
+    {{ sb.css("src/css/critical.css")|safe }}
+    {{ sb.launch_script()|safe }}
+    {{ sb.css("src/css/main.css")|safe }}
+</head>
+<body>
+    {{ sb.script("src/js/app.js")|safe }}
+</body>
+```
+
+</details>
+
+<details>
+<summary><strong>Ruby</strong></summary>
+
+```ruby
+# Gemfile
+gem "skybolt-ruby"
+```
+
+```ruby
+sb = Skybolt::Renderer.new(
+  "public/dist/.skybolt/render-map.json",
+  cookies: request.cookies
+)
+```
+
+```erb
+<head>
+  <%= raw skybolt.css("src/css/critical.css") %>
+  <%= raw skybolt.launch_script %>
+  <%= raw skybolt.css("src/css/main.css") %>
+</head>
+<body>
+  <%= raw skybolt.script("src/js/app.js") %>
+</body>
+```
+
+</details>
+
+<details>
+<summary><strong>Go</strong></summary>
+
+```bash
+go get github.com/JensRoland/skybolt-go
+```
+
+```go
+import skybolt "github.com/JensRoland/skybolt-go"
+
+sb, err := skybolt.New("static/.skybolt/render-map.json", cookies, "")
+```
+
+```go
+// In your template
+sb.CSS("src/css/critical.css")
+sb.LaunchScript()
+sb.CSS("src/css/main.css")
+sb.Script("src/js/app.js", true)
+```
+
+</details>
+
 ### 3. Build and Run
 
 ```bash
@@ -93,21 +178,24 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 
 ## Packages
 
-| Package                                       | Description                        | Install                            |
-| --------------------------------------------- | ---------------------------------- | ---------------------------------- |
-| [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin` |
-| [skybolt/skybolt-php](packages/php/)          | PHP adapter                        | `composer require skybolt/skybolt` |
-
-### Coming Soon
-
-- **Ruby** - `gem install skybolt`
-- **Python** - `pip install skybolt` /  `uv add skybolt`
-- **Go** - `go get github.com/skybolt/skybolt-go`
+| Package                                       | Description                        | Install                                   |
+| --------------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
+| [skybolt-php](packages/php/)                  | PHP adapter                        | `composer require skybolt/skybolt`        |
+| [skybolt-python](packages/python/)            | Python adapter                     | `pip install skybolt-python`              |
+| [skybolt-ruby](packages/ruby/)                | Ruby adapter                       | `gem install skybolt-ruby`                |
+| [skybolt-go](packages/go/)                    | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
 
 ## Examples
 
-- [Minimal Example](examples/php-vanilla/) - Basic PHP setup
-- [Portfolio Example](examples/php-portfolio-timber/) - Full-featured PHP with Timber
+| Example                                                | Language | Framework |
+| ------------------------------------------------------ | -------- | --------- |
+| [php-vanilla](examples/php-vanilla/)                   | PHP      | -         |
+| [php-portfolio-timber](examples/php-portfolio-timber/) | PHP      | -         |
+| [php-laravel](examples/php-laravel/)                   | PHP      | Laravel   |
+| [python-django](examples/python-django/)               | Python   | Django    |
+| [ruby-rails](examples/ruby-rails/)                     | Ruby     | Rails     |
+| [go-gin](examples/go-gin/)                             | Go       | Gin       |
 
 ## Architecture
 
@@ -161,24 +249,18 @@ skybolt({
 })
 ```
 
-### PHP Adapter
+### Server Adapters
 
-```php
-$sb = new Skybolt\Skybolt($renderMapPath);
+All adapters share the same API pattern:
 
-// Render CSS
-$sb->css('src/css/main.css');
+| Method     | PHP                        | Python                    | Ruby                  | Go                       |
+| ---------- | -------------------------- | ------------------------- | --------------------- | ------------------------ |
+| Render CSS | `$sb->css($entry)`         | `sb.css(entry)`           | `sb.css(entry)`       | `sb.CSS(entry)`          |
+| Render JS  | `$sb->script($entry)`      | `sb.script(entry)`        | `sb.script(entry)`    | `sb.Script(entry, true)` |
+| Launcher   | `$sb->launchScript()`      | `sb.launch_script()`      | `sb.launch_script`    | `sb.LaunchScript()`      |
+| Get URL    | `$sb->getAssetUrl($entry)` | `sb.get_asset_url(entry)` | `sb.asset_url(entry)` | `sb.GetAssetURL(entry)`  |
 
-// Render JavaScript
-$sb->script('src/js/app.js');
-$sb->script('src/js/legacy.js', module: false);
-
-// Render client launcher (call once in <head>)
-$sb->launchScript();
-
-// Get asset URL (manual use)
-$sb->getAssetUrl('src/css/main.css');
-```
+See each adapter's README for full API documentation.
 
 ## Browser Support
 
@@ -200,7 +282,7 @@ await skybolt.getCacheInfo()
 await skybolt.clearCache()
 
 // Full reset
-await skybolt.selfDestruct()
+await skybolt.selfDestruct(reload=true)
 ```
 
 Query parameters:
@@ -210,7 +292,7 @@ Query parameters:
 ## Requirements
 
 - **Build:** Vite 5.0+ or 6.0+
-- **PHP:** 8.1+
+- **Server:** PHP 8.1+ / Python 3.9+ / Ruby 3.0+ / Go 1.21+
 - **Browser:** Service Worker support
 
 ## License

@@ -66,6 +66,8 @@ This document outlines the planned features and improvements for Skybolt.
   - Middleware for Gin
   - Template helpers
 
+- [ ] **Language specific repos** - Add more splitter Github Action stuff - all the languages get a repo!
+
 ## Version 4.0 (Future Vision) 🚀
 
 **Target:** 2026 | **Focus:** Advanced Features
