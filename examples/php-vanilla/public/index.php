@@ -77,7 +77,7 @@ $sb = new Skybolt(__DIR__ . '/../dist/.skybolt/render-map.json');
         <footer>
             <p>
                 Skybolt v<?= Skybolt::VERSION ?> |
-                <a href="https://github.com/skybolt/skybolt">GitHub</a>
+                <a href="https://github.com/JensRoland/skybolt">GitHub</a>
             </p>
         </footer>
     </div>

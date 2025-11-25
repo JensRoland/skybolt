@@ -28,7 +28,7 @@ skybolt/
 │   │   ├── sw.js              # Service Worker source
 │   │   └── package.json
 │   │
-│   └── php/                   # skybolt/skybolt (Composer)
+│   └── php/                   # skybolt/skybolt-php (Composer)
 │       ├── src/Skybolt.php    # ~170 lines
 │       └── composer.json
 │

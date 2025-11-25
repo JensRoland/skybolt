@@ -93,15 +93,15 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 
 ## Packages
 
-| Package | Description | Install |
-|---------|-------------|---------|
+| Package                                       | Description                        | Install                            |
+| --------------------------------------------- | ---------------------------------- | ---------------------------------- |
 | [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin` |
-| [skybolt/skybolt](packages/php/) | PHP adapter | `composer require skybolt/skybolt` |
+| [skybolt/skybolt-php](packages/php/)          | PHP adapter                        | `composer require skybolt/skybolt` |
 
 ### Coming Soon
 
 - **Ruby** - `gem install skybolt`
-- **Python** - `pip install skybolt`
+- **Python** - `pip install skybolt` /  `uv add skybolt`
 - **Go** - `go get github.com/skybolt/skybolt-go`
 
 ## Examples
