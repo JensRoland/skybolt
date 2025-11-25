@@ -1,0 +1,12 @@
+[project]
+name = "skybolt-django-example"
+version = "1.0.0"
+description = "Django Skybolt example"
+requires-python = ">=3.10"
+dependencies = [
+    "django>=5.0",
+    "skybolt-python",
+]
+
+[tool.uv.sources]
+skybolt-python = { path = "../../packages/python", editable = true }

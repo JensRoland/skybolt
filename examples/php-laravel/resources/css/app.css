@@ -1,0 +1,119 @@
+/* Main CSS - Below the fold styles */
+
+main {
+    padding: 3rem 0;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.feature {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.feature h3 {
+    margin: 0 0 0.5rem 0;
+    color: #0066cc;
+}
+
+.feature p {
+    margin: 0;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.demo-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.demo-section h2 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.cache-status {
+    padding: 1rem;
+    background: #f0f7ff;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.cache-status.cached {
+    background: #e6ffe6;
+    border-left: 4px solid #00cc66;
+}
+
+.cache-status.not-cached {
+    background: #fff0e6;
+    border-left: 4px solid #ff9933;
+}
+
+button {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    color: white;
+    background: #0066cc;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #0052a3;
+}
+
+button.danger {
+    background: #cc3300;
+}
+
+button.danger:hover {
+    background: #a32900;
+}
+
+footer {
+    margin-top: 3rem;
+    padding: 2rem 0;
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+footer a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: #e63946;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}

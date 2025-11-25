@@ -9,3 +9,11 @@ vendor/
 node_modules/
 bun.lockb
 dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/

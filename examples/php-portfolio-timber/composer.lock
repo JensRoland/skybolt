@@ -13,7 +13,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../packages/php",
-                "reference": "b5a518bf15c02cb462dc5722d187f12592e73707"
+                "reference": "f38673100847b117b57a5392a89c906144ecf190"
             },
             "require": {
                 "php": ">=8.1"
@@ -47,7 +47,7 @@
             "authors": [
                 {
                     "name": "Jens Roland",
-                    "email": "jens@jensroland.com"
+                    "email": "mail@jensroland.com"
                 }
             ],
             "description": "High-performance asset caching for multi-page applications",

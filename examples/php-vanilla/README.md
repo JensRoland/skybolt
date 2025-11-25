@@ -26,7 +26,7 @@ make serve
 
 ## File Structure
 
-```
+```text
 php-vanilla/
 ├── public/
 │   ├── index.php          # Main page using Skybolt

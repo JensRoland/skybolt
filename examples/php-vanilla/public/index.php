@@ -32,7 +32,7 @@ $sb = new Skybolt(__DIR__ . '/../dist/.skybolt/render-map.json');
 <body>
     <div class="container">
         <header>
-            <h1>Skybolt</h1>
+            <h1>Skybolt <span class="badge">PHP</span></h1>
             <p class="tagline">High-performance asset caching for multi-page applications</p>
         </header>
 

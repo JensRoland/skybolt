@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skybolt Rails Example</title>
+
+    <%# Critical CSS - inlined on first visit, cached thereafter %>
+    <%= raw skybolt.css("app/assets/stylesheets/critical.css") %>
+
+    <%# Skybolt client launcher - must be in <head> %>
+    <%= raw skybolt.launch_script %>
+
+    <%# Main CSS - loaded async, cached by Service Worker %>
+    <%= raw skybolt.css("app/assets/stylesheets/application.css") %>
+</head>
+<body>
+    <%= yield %>
+
+    <%# Application JavaScript - loaded async as ES module %>
+    <%= raw skybolt.script("app/assets/javascripts/application.js") %>
+</body>
+</html>

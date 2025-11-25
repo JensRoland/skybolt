@@ -30,7 +30,7 @@ This document outlines the planned features and improvements for Skybolt.
 ### Planned Features
 
 - [X] **Developer Experience** - Better encapsulation and interfaces for easy integration and deployment alongside existing applications
-- [ ] **Simplified HTML syntax** - maybe `sb-asset="counter:rGu4co" sb-state='store'` and `sb-asset="header:PgpDxo" sb-state='store'` (since we use script tags for scripts and link tags for stylesheets etc.)
+- [X] **Simplified HTML syntax** - maybe `sb-asset="counter:rGu4co" sb-state='store'` and `sb-asset="header:PgpDxo" sb-state='store'` (since we use script tags for scripts and link tags for stylesheets etc.)
 - [X] **Sessionless Caching** - Support for caching without session inventory since most 'modern' web devs are afraid of sessions, and we won't convince anyone to configure DB-backed sessions just for Skybolt. The session inventory was really just a half-baked attempt at working around the 4KB cookie limit (and not be so wasteful with cookie headers), but I was still using the cookie... to get around the cookie limit I could just use multiple cookies if needed. Could also use a better data packing method than JSON.
 - [X] **Composer Package** - Publish to Packagist for easy installation
 - [X] **Service Workers and Cache API** - Attempt to use WorkBox or similar as the caching engine instead of localStorage for better DX and performance
