@@ -40,7 +40,7 @@ $sb = new Skybolt(__DIR__ . '/../dist/.skybolt/render-map.json');
             <div class="feature-grid">
                 <div class="feature">
                     <h3>Zero HTTP Requests</h3>
-                    <p>On repeat visits, assets are served from the Service Worker cache in ~1ms. No network requests needed.</p>
+                    <p>On repeat visits, assets are served from the Service Worker cache in ~5ms. No network requests needed.</p>
                 </div>
                 <div class="feature">
                     <h3>Automatic Invalidation</h3>

@@ -13,7 +13,7 @@ Skybolt v3 uses a **build-time render map** approach:
 1. **Vite Plugin** (`@skybolt/vite-plugin`) generates `render-map.json` at build time
 2. **Server Adapters** (PHP, Ruby, Python, etc.) read the render map and output HTML
 3. **Client Script** caches inlined assets and manages Service Worker
-4. **Service Worker** serves cached assets with ~1ms response time
+4. **Service Worker** serves cached assets with ~5ms response time
 
 This architecture enables trivial multi-language support - adapters are ~50-150 lines of code.
 
@@ -70,7 +70,7 @@ skybolt/
 3. Server compares versions (match!)
 4. Server outputs `<link>` and `<script>` tags
 5. Browser requests assets
-6. Service Worker intercepts → serves from cache (~1ms)
+6. Service Worker intercepts → serves from cache (~5ms)
 7. **Zero network requests**
 
 ### After Rebuild
@@ -207,10 +207,10 @@ await skybolt.selfDestruct()  // Clear all, unregister SW, reload
 
 Inlined assets use these attributes:
 
-| Attribute | Purpose | Example |
-|-----------|---------|---------|
+| Attribute  | Purpose         | Example                     |
+| ---------- | --------------- | --------------------------- |
 | `sb-asset` | Asset ID + hash | `src/css/main.css:Pw3rT8vL` |
-| `sb-url` | Cache key URL | `/assets/main-Pw3rT8vL.css` |
+| `sb-url`   | Cache key URL   | `/assets/main-Pw3rT8vL.css` |
 
 ## Cookie Format
 
@@ -241,13 +241,6 @@ await skybolt.getCacheInfo()
 await skybolt.clearCache()
 await skybolt.selfDestruct()
 ```
-
-## Future Plans
-
-- Ruby adapter (`gem install skybolt`)
-- Python adapter (`pip install skybolt`)
-- Go adapter
-- Framework integrations (Laravel, Rails, Django)
 
 ---
 

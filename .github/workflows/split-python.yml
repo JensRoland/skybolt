@@ -1,0 +1,29 @@
+name: Split Python Package
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/python/**'
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Split and push to skybolt-python repo
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.PYTHON_PACKAGE_DEPLOY_KEY }}
+        with:
+          source-directory: 'packages/python'
+          user-email: 'mail@jensroland.com'
+          destination-github-username: 'JensRoland'
+          destination-repository-name: 'skybolt-python'
+          target-branch: master
+          create-target-branch-if-needed: true
+          commit-message: 'Sync from monorepo: ${{ github.sha }}'

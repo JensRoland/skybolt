@@ -1,0 +1,29 @@
+name: Split Ruby Package
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/ruby/**'
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Split and push to skybolt-ruby repo
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.RUBY_PACKAGE_DEPLOY_KEY }}
+        with:
+          source-directory: 'packages/ruby'
+          user-email: 'mail@jensroland.com'
+          destination-github-username: 'JensRoland'
+          destination-repository-name: 'skybolt-ruby'
+          target-branch: master
+          create-target-branch-if-needed: true
+          commit-message: 'Sync from monorepo: ${{ github.sha }}'

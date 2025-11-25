@@ -8,7 +8,7 @@ High-performance asset caching for multi-page applications.
 
 ## What is Skybolt?
 
-Skybolt eliminates HTTP requests for cached assets on repeat visits. By combining Service Workers with intelligent server-side rendering, assets load from cache in ~1ms with zero network overhead.
+Skybolt eliminates HTTP requests for cached assets on repeat visits. By combining Service Workers with intelligent server-side rendering, assets load from cache in ~5ms with zero network overhead.
 
 ### How It Works
 
@@ -68,7 +68,7 @@ Choose your language:
 <summary><strong>PHP</strong></summary>
 
 ```bash
-composer require skybolt/skybolt
+composer require jensroland/skybolt-php
 ```
 
 ```php
@@ -181,7 +181,7 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 | Package                                       | Description                        | Install                                   |
 | --------------------------------------------- | ---------------------------------- | ----------------------------------------- |
 | [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
-| [skybolt-php](packages/php/)                  | PHP adapter                        | `composer require skybolt/skybolt`        |
+| [skybolt-php](packages/php/)                  | PHP adapter                        | `composer require jensroland/skybolt-php` |
 | [skybolt-python](packages/python/)            | Python adapter                     | `pip install skybolt-python`              |
 | [skybolt-ruby](packages/ruby/)                | Ruby adapter                       | `gem install skybolt-ruby`                |
 | [skybolt-go](packages/go/)                    | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
@@ -231,7 +231,7 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 │                                                             │
 │  skybolt-sw.js (Service Worker)                             │
 │  • Intercepts asset requests                                │
-│  • Serves from Cache API (~1ms)                             │
+│  • Serves from Cache API (~5ms)                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -303,4 +303,6 @@ MIT
 
 **Original Concept:** Jens Roland & Morten Olsen (2012-2013)
 
-Inspired by performance research from Paul Irish, Steve Souders, Addy Osmani, and others.
+Inspired by performance research from Paul Irish (GMail mobile IIRC), Steve Souders, Addy Osmani, and others.
+
+The same approach was described in a [Filament Group 2017 blog post](https://www.filamentgroup.com/lab/inlining-cache.html) by Scott Jehl

@@ -6,7 +6,7 @@ Vite plugin for [Skybolt](https://github.com/JensRoland/skybolt) - High-performa
 
 Skybolt eliminates HTTP requests for cached assets on repeat visits by using Service Workers and the Cache API. On first visit, assets are inlined in the HTML and cached. On subsequent visits, the server sends regular `<link>` and `<script>` tags, which the Service Worker intercepts and serves instantly from cache.
 
-**Result:** Zero network requests for CSS/JS on repeat visits. Assets load in ~1ms.
+**Result:** Zero network requests for CSS/JS on repeat visits. Assets load in ~5ms.
 
 ## Installation
 
@@ -63,9 +63,9 @@ dist/
 
 Install a Skybolt adapter for your language:
 
-- **PHP:** `composer require skybolt/skybolt`
-- **Ruby:** `gem install skybolt`
-- **Python:** `pip install skybolt`
+- **PHP:** `composer require jensroland/skybolt-php`
+- **Ruby:** `gem install skybolt-ruby`
+- **Python:** `pip install skybolt-python`
 
 Example (PHP):
 
@@ -146,7 +146,7 @@ skybolt({
 2. Server checks cookie (has asset versions)
 3. Server sends regular `<link>` and `<script>` tags
 4. Browser requests assets
-5. Service Worker intercepts and serves from Cache API (~1ms)
+5. Service Worker intercepts and serves from Cache API (~5ms)
 6. **Zero network requests!**
 
 ### After Build (Cache Invalidation)

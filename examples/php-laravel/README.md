@@ -21,7 +21,7 @@ make serve
 
 1. **First Visit**: Assets are inlined in the HTML with `sb-*` attributes
 2. **Service Worker**: Registers and caches the inlined assets
-3. **Repeat Visit**: Assets are served from Service Worker cache (~1ms)
+3. **Repeat Visit**: Assets are served from Service Worker cache (~5ms)
 4. **Cache Invalidation**: Rebuild with `make build`, refresh to see new assets cached
 
 ## File Structure

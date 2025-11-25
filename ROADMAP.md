@@ -2,93 +2,63 @@
 
 This document outlines the planned features and improvements for Skybolt.
 
-## Version 2.0 (Current) ✅
+## Version 3.1 (Current) ✅
 
-**Status:** Production Ready | **Released:** January 2025
+**Status:** Beta | **Released:** November 2025
 
 ### Completed Features
 
-- ✅ PHP 8.3 rewrite with modern features (readonly properties, typed everything)
+- ✅ Multi-language support (Go, PHP, Python, Ruby)
+- ✅ Framework integrations (Django, Flask, Gin, Laravel, Ruby on Rails)
 - ✅ Vite integration for build-time bundling
 - ✅ Manifest-based asset discovery
 - ✅ CDN support with configurable URLs
-- ✅ Dev server detection for HMR
-- ✅ ES Module client-side JavaScript
-- ✅ Self-contained examples
-- ✅ Comprehensive documentation
+- ✅ Service Worker caching with Cache API
+- ✅ Cookie-based version tracking
 
-### Performance Improvements
+### Remaining Tasks for 3.1
 
-- Build speed: Runtime minification → <1s with Vite (significantly faster)
-- Minification: Custom PHP → esbuild/Lightning CSS (modern tooling)
-- Modern stack: PHP 8.3, ES Modules, Vite integration
+- [X] **Language specific repos** - Add 'splitter' Github Actions for each supported language - all the languages get a repo!
 
-## Version 3.0 (Next) 🎯
+- [ ] **README Look&Feel** - Revamp READMEs with better visuals & diagrams; logo/header, before/after performance charts
 
-**Target:** Q4 2025 | **Focus:** Reusable Package for Distribution
+- [X] **Publish skybolt-php to Packagist** - Make it installable via Composer; set up GitHub Actions for automatic releases
+- [X] **Publish skybolt-python to PyPI** - Make it installable via pip; set up GitHub Actions for automatic releases
+- [X] **Publish skybolt-ruby to RubyGems** - Make it installable via gem; set up GitHub Actions for automatic releases
+- [X] **Publish skybolt-go to Go Modules** - Make it installable via `go get`; set up GitHub Actions for automatic releases
+
+## Version 3.2 (Next) 📦
+
+**Target:** Q4 2025 | **Focus:** Reusable Packages for Distribution
+
+Having examples isn't enough -- we have to provide out-of-the-box integrations (one-liners or single-command installs) for the most popular frameworks.
 
 ### Planned Features
 
-- [X] **Developer Experience** - Better encapsulation and interfaces for easy integration and deployment alongside existing applications
-- [X] **Simplified HTML syntax** - maybe `sb-asset="counter:rGu4co" sb-state='store'` and `sb-asset="header:PgpDxo" sb-state='store'` (since we use script tags for scripts and link tags for stylesheets etc.)
-- [X] **Sessionless Caching** - Support for caching without session inventory since most 'modern' web devs are afraid of sessions, and we won't convince anyone to configure DB-backed sessions just for Skybolt. The session inventory was really just a half-baked attempt at working around the 4KB cookie limit (and not be so wasteful with cookie headers), but I was still using the cookie... to get around the cookie limit I could just use multiple cookies if needed. Could also use a better data packing method than JSON.
-- [X] **Composer Package** - Publish to Packagist for easy installation
-- [X] **Service Workers and Cache API** - Attempt to use WorkBox or similar as the caching engine instead of localStorage for better DX and performance
-- [ ] **Async CSS** - Make it possible to actually load non-critical CSS in a non-blocking way while still using Service Worker caching; preload plus JS to apply styles once fetched?
+- [ ] **HTML Fragment Caching** - Support caching of HTML fragments (e.g., partials, components) alongside CSS/JS assets
 
-## Version 3.1 (Planned) 📦
+- [ ] **Bun/Node.js adapter package** - JavaScript/TypeScript adapter NPM package (`@skybolt/skybolt-js-adapter`)
+  - Express integration middleware, included in js adapter package
 
-**Target:** Q1 2026 | **Focus:** Multi-Language/Framework Integrations
+- [ ] **ASP.NET Core adapter package** - C# adapter NuGet package (`Skybolt.AspNetCore`)
+  - Middleware for ASP.NET Core, included in ASP.NET Core adapter package
 
-### Framework Packages
+- [ ] **Laravel Integration** - Framework integration with Laravel (Blade directives), include in skybolt-php package
 
-- [ ] **Nette Package** - Template engine integration with Latte and Nette Assets
+- [ ] **Gin Integration** - Framework integration with Gin, include in skybolt-go package
 
-- [ ] **Laravel Package** - First-class Laravel integration
-  - Blade directives
-  - Artisan commands
-  - Config publishing
-  - Asset pipeline integration
-
-### Multi-Language Support
-
-- [ ] **Bun/Node.js** - JavaScript/TypeScript implementation
-  - NPM package (`@skybolt/core`)
-  - Express middleware
-  - Vite plugin?
-
-- [ ] **Python** - Python implementation
-  - PyPI package (`skybolt`)
-  - FastAPI integration
-
-- [ ] **Go** - Go implementation
-  - Go module
-  - Middleware for Gin
-  - Template helpers
-
-- [ ] **Language specific repos** - Add more splitter Github Action stuff - all the languages get a repo!
+- [ ] **Rails Integration** - Framework integration with Rails, include in skybolt-ruby package
 
 ## Version 4.0 (Future Vision) 🚀
 
-**Target:** 2026 | **Focus:** Advanced Features
+**Target:** 2026 | **Focus:** Anything not prioritized for 3.x
 
-- [ ] **WebP/AVIF Support** - Automatic image format optimization
-- [ ] **Idle Preloading** - Idle Detection API-triggered asset preloading of lazy assets
-- [ ] **Service Worker Strategy** - Migrate from localStorage to Cache API for better performance and reliability
-- [ ] **Streaming** - Stream-based asset delivery
-- [ ] **HTTP/3 Support** - QUIC protocol optimization
-
-## Community & Ecosystem 🌍
-
-### Documentation & Learning
-
-- [ ] **Interactive Documentation** - Live code examples and playground
-- [ ] **Video Tutorials** - Getting started and advanced topics
-- [ ] **Migration Guides** - Framework-specific migration guides
-- [ ] **Case Studies** - Real-world performance improvements
+- [ ] **Django Integration** - Framework integration with Django (middleware, template tags?), include in skybolt-python package
+- [ ] **Nette Integration** - Framework integration with Nette (Latte and Nette Assets), include in skybolt-php package
+- [ ] **Import Maps** - Support for import maps to manage JS dependencies more efficiently
+- [ ] **Async CSS** - Make it possible to actually load non-critical CSS in a non-blocking way while still using Service Worker caching; preload plus JS to apply styles once fetched?
+- [ ] **HTTP/2 Push Support** - Integrate HTTP/2 push capabilities for critical asset delivery before the initial HTML is fully loaded
 
 ---
 
-**Last Updated:** November 23, 2025
-
-**Note:** This roadmap is subject to change based on community feedback, technical constraints, and strategic priorities.
+**Last Updated:** November 25, 2025
