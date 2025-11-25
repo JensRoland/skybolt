@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skybolt Django Example</title>
+    <title>Skybolt Laravel Example</title>
 
-    {# Critical CSS - inlined on first visit, cached thereafter #}
-    {{ critical_css|safe }}
+    
+    <?php echo \App\Providers\AppServiceProvider::css('resources/css/critical.css'); ?>
 
-    {# Skybolt client launcher - must be in <head> #}
-    {{ launch_script|safe }}
+    
+    <?php echo \App\Providers\AppServiceProvider::launchScript(); ?>
 
-    {# Main CSS - loaded async, cached by Service Worker #}
-    {{ app_css|safe }}
+    
+    <?php echo \App\Providers\AppServiceProvider::css('resources/css/app.css'); ?>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Skybolt <span class="badge">Django</span></h1>
+            <h1>Skybolt <span class="badge">Laravel</span></h1>
             <p class="tagline">High-performance asset caching for multi-page applications</p>
         </header>
 
@@ -32,8 +32,8 @@
                     <p>When you rebuild, Vite generates new hashes. Skybolt detects the change and updates the cache.</p>
                 </div>
                 <div class="feature">
-                    <h3>Django Integration</h3>
-                    <p>Simple template tags let you use Skybolt with any Django project. Just a few lines of code.</p>
+                    <h3>Laravel Integration</h3>
+                    <p>Simple Blade directives let you use Skybolt with any Laravel project. Just a few lines of code.</p>
                 </div>
             </div>
 
@@ -61,13 +61,14 @@
 
         <footer>
             <p>
-                Skybolt v{{ version }} |
+                Skybolt v@skyboltVersion |
                 <a href="https://github.com/JensRoland/skybolt">GitHub</a>
             </p>
         </footer>
     </div>
 
-    {# Application JavaScript - loaded async as ES module #}
-    {{ app_js|safe }}
+    
+    <?php echo \App\Providers\AppServiceProvider::script('resources/js/app.js'); ?>
 </body>
 </html>
+<?php /**PATH /Users/jensr/Documents/Code/git-repositories/skybolt/examples/php-laravel/resources/views/welcome.blade.php ENDPATH**/ ?>

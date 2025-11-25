@@ -6,13 +6,13 @@
     <title>Skybolt Laravel Example</title>
 
     {{-- Critical CSS - inlined on first visit, cached thereafter --}}
-    {!! App\View\Components\Skybolt::css('resources/css/critical.css') !!}
+    @skyboltCss('resources/css/critical.css')
 
     {{-- Skybolt client launcher - must be in <head> --}}
-    {!! App\View\Components\Skybolt::launchScript() !!}
+    @skyboltLaunch
 
     {{-- Main CSS - loaded async, cached by Service Worker --}}
-    {!! App\View\Components\Skybolt::css('resources/css/app.css') !!}
+    @skyboltCss('resources/css/app.css')
 </head>
 <body>
     <div class="container">
@@ -33,7 +33,7 @@
                 </div>
                 <div class="feature">
                     <h3>Laravel Integration</h3>
-                    <p>Simple Blade helpers let you use Skybolt with any Laravel project. Just a few lines of code.</p>
+                    <p>Simple Blade directives let you use Skybolt with any Laravel project. Just a few lines of code.</p>
                 </div>
             </div>
 
@@ -61,13 +61,13 @@
 
         <footer>
             <p>
-                Skybolt v{{ \Skybolt\Skybolt::VERSION }} |
+                Skybolt v@skyboltVersion |
                 <a href="https://github.com/JensRoland/skybolt">GitHub</a>
             </p>
         </footer>
     </div>
 
     {{-- Application JavaScript - loaded async as ES module --}}
-    {!! App\View\Components\Skybolt::script('resources/js/app.js') !!}
+    @skyboltScript('resources/js/app.js')
 </body>
 </html>

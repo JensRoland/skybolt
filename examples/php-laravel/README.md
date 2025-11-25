@@ -1,6 +1,6 @@
 # Skybolt Laravel Example
 
-A Laravel example demonstrating Skybolt's asset caching.
+A Laravel example demonstrating Skybolt's asset caching using Blade directives.
 
 ## Quick Start
 
@@ -29,48 +29,59 @@ make serve
 ```text
 php-laravel/
 ├── app/
-│   ├── Providers/
-│   │   └── AppServiceProvider.php
-│   └── View/
-│       └── Components/
-│           └── Skybolt.php        # Blade helper for Skybolt
+│   └── Providers/
+│       └── AppServiceProvider.php  # Blade directives for Skybolt
 ├── bootstrap/
-│   └── app.php                    # Laravel bootstrap
+│   └── app.php                     # Laravel bootstrap
 ├── config/
 │   ├── app.php
 │   └── view.php
 ├── public/
-│   ├── index.php                  # Entry point
-│   ├── router.php                 # Dev server router
-│   └── build/                     # Built assets (generated)
+│   ├── index.php                   # Entry point
+│   ├── router.php                  # Dev server router
+│   └── build/                      # Built assets (generated)
 ├── resources/
 │   ├── css/
-│   │   ├── critical.css           # Above-the-fold styles
-│   │   └── app.css                # Main styles
+│   │   ├── critical.css            # Above-the-fold styles
+│   │   └── app.css                 # Main styles
 │   ├── js/
-│   │   └── app.js                 # Application JavaScript
+│   │   └── app.js                  # Application JavaScript
 │   └── views/
-│       └── welcome.blade.php      # Main Blade template
+│       └── welcome.blade.php       # Main Blade template
 ├── routes/
-│   └── web.php                    # Route definitions
-├── storage/                       # Laravel storage
-├── vite.config.js                 # Vite configuration
-├── package.json                   # NPM dependencies
-├── composer.json                  # PHP dependencies
-└── Makefile                       # Build commands
+│   └── web.php                     # Route definitions
+├── storage/                        # Laravel storage
+├── vite.config.js                  # Vite configuration
+├── package.json                    # NPM dependencies
+├── composer.json                   # PHP dependencies
+└── Makefile                        # Build commands
 ```
 
 ## Usage in Blade Templates
 
+Skybolt provides clean Blade directives for asset management:
+
 ```blade
 {{-- In your <head> --}}
-{!! App\View\Components\Skybolt::css('resources/css/critical.css') !!}
-{!! App\View\Components\Skybolt::launchScript() !!}
-{!! App\View\Components\Skybolt::css('resources/css/app.css') !!}
+@skyboltCss('resources/css/critical.css')
+@skyboltLaunch
+@skyboltCss('resources/css/app.css')
 
 {{-- Before </body> --}}
-{!! App\View\Components\Skybolt::script('resources/js/app.js') !!}
+@skyboltScript('resources/js/app.js')
+
+{{-- Display version (optional) --}}
+Skybolt v@skyboltVersion
 ```
+
+### Available Directives
+
+| Directive                | Description                                               |
+| ------------------------ | --------------------------------------------------------- |
+| `@skyboltCss('path')`    | Render CSS (inlined on first visit, cached thereafter)    |
+| `@skyboltScript('path')` | Render JavaScript as ES module                            |
+| `@skyboltLaunch`         | Render the Skybolt client launcher (required in `<head>`) |
+| `@skyboltVersion`        | Output the Skybolt version number                         |
 
 ## Testing the Cache
 

@@ -11,5 +11,8 @@ module SkyboltRailsExample
     config.eager_load = false
     config.api_only = false
     config.secret_key_base = "skybolt-rails-example-secret-key-do-not-use-in-production"
+
+    # Serve static files from public/dist
+    config.public_file_server.enabled = true
   end
 end

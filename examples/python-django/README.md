@@ -58,16 +58,22 @@ from skybolt import Skybolt
 
 def index(request):
     sb = Skybolt("static/dist/.skybolt/render-map.json", cookies=request.COOKIES)
-    return render(request, "index.html", {"sb": sb})
+    # Pre-render assets (Django templates don't support method calls with args)
+    return render(request, "index.html", {
+        "critical_css": sb.css("static/css/critical.css"),
+        "app_css": sb.css("static/css/app.css"),
+        "app_js": sb.script("static/js/app.js"),
+        "launch_script": sb.launch_script(),
+    })
 ```
 
 ```html
 <!-- index.html -->
-{{ sb.css("static/css/critical.css")|safe }}
-{{ sb.launch_script|safe }}
-{{ sb.css("static/css/app.css")|safe }}
+{{ critical_css|safe }}
+{{ launch_script|safe }}
+{{ app_css|safe }}
 
-{{ sb.script("static/js/app.js")|safe }}
+{{ app_js|safe }}
 ```
 
 ## Testing the Cache

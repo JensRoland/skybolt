@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class ServiceWorkerController < ApplicationController
+  skip_forgery_protection
+
   def show
     sw_path = Rails.root.join("public/dist/skybolt-sw.js")
 
