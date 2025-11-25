@@ -1,0 +1,28 @@
+name: Split PHP Package
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/php/**'
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Split and push to skybolt-php repo
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.PHP_PACKAGE_DEPLOY_KEY }}
+        with:
+          source-directory: 'packages/php'
+          user-email: 'mail@jensroland.com'
+          destination-github-username: 'JensRoland'
+          destination-repository-name: 'skybolt-php'
+          target-branch: master
+          commit-message: 'Sync from monorepo: ${{ github.sha }}'
