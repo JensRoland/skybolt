@@ -3,7 +3,7 @@ name: Split Go Package
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'packages/go/**'
 
@@ -24,6 +24,6 @@ jobs:
           user-email: 'mail@jensroland.com'
           destination-github-username: 'JensRoland'
           destination-repository-name: 'skybolt-go'
-          target-branch: master
+          target-branch: main
           create-target-branch-if-needed: true
           commit-message: 'Sync from monorepo: ${{ github.sha }}'

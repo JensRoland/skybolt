@@ -1,0 +1,38 @@
+name: Publish Vite Plugin to NPM
+
+on:
+  push:
+    tags:
+      - 'vite-plugin-v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Build (minify client)
+        working-directory: packages/vite-plugin
+        run: pnpm run minify
+
+      - name: Publish to NPM
+        working-directory: packages/vite-plugin
+        run: npm publish --provenance --access public

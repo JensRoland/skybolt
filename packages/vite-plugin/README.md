@@ -11,7 +11,7 @@ Skybolt eliminates HTTP requests for cached assets on repeat visits by using Ser
 ## Installation
 
 ```bash
-npm install @skybolt/vite-plugin
+pnpm add @skybolt/vite-plugin
 ```
 
 ## Usage
@@ -43,7 +43,7 @@ export default defineConfig({
 ### 2. Build
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 This generates:
@@ -151,7 +151,7 @@ skybolt({
 
 ### After Build (Cache Invalidation)
 
-1. You run `npm run build`
+1. You run `pnpm run build`
 2. Vite generates new hashes for changed files
 3. Plugin updates `render-map.json`
 4. Visitor returns, server detects hash mismatch
@@ -194,6 +194,29 @@ The `render-map.json` contains everything server adapters need:
 - Safari 11.1+
 
 Requires Service Worker and Cache API support. Falls back gracefully to standard external assets when unavailable.
+
+## Publishing
+
+To publish a new version:
+
+1. Update the version in `packages/vite-plugin/package.json`
+2. Create a new tag with the format `vite-plugin-v*` (e.g., `vite-plugin-v1.0.0`)
+
+```sh
+git add .
+git commit -m "chore: bump vite-plugin to v3.1.1"
+git tag vite-plugin-v3.1.1
+```
+
+3. Push the tag to GitHub
+
+```sh
+git push origin main --tags
+```
+
+The workflow uses `vite-plugin-v*` tags (not just `v*`) to differentiate from the adapter package tags. It also includes `--provenance` for supply chain security.
+
+The `publish-vite-plugin.yml` Github Action will automatically build and publish the package to NPM using OIDC authentication.
 
 ## License
 
