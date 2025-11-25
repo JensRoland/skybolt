@@ -38,5 +38,9 @@
         "test": "phpunit",
         "analyse": "phpstan analyse src --level=8"
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "support": {
+        "issues": "https://github.com/JensRoland/skybolt/issues",
+        "source": "https://github.com/JensRoland/skybolt/tree/master/packages/php"
+    }
 }
