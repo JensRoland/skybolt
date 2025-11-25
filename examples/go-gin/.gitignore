@@ -1,0 +1,21 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.sum
+
+# Node
+node_modules/
+
+# Build output
+static/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

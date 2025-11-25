@@ -1,0 +1,39 @@
+{
+    "name": "skybolt/laravel-example",
+    "type": "project",
+    "description": "Laravel Skybolt example",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0",
+        "skybolt/skybolt-php": "*"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.13"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/php"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "post-autoload-dump": [
+            "@php artisan package:discover --ansi"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}

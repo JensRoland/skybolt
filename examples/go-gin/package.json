@@ -1,0 +1,13 @@
+{
+    "name": "skybolt-gin-example",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@skybolt/vite-plugin": "file:../../packages/vite-plugin",
+        "vite": "^6.0.0"
+    }
+}
