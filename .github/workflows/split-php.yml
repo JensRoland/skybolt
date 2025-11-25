@@ -25,4 +25,5 @@ jobs:
           destination-github-username: 'JensRoland'
           destination-repository-name: 'skybolt-php'
           target-branch: master
+          create-target-branch-if-needed: true
           commit-message: 'Sync from monorepo: ${{ github.sha }}'
