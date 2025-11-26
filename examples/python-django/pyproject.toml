@@ -5,8 +5,8 @@ description = "Django Skybolt example"
 requires-python = ">=3.10"
 dependencies = [
     "django>=5.0",
-    "skybolt-python",
+    "skybolt",
 ]
 
 [tool.uv.sources]
-skybolt-python = { path = "../../packages/python", editable = true }
+skybolt = { path = "../../packages/python", editable = true }

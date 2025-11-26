@@ -63,9 +63,9 @@ dist/
 
 Install a Skybolt adapter for your language:
 
-- **PHP:** `composer require jensroland/skybolt-php`
-- **Ruby:** `gem install skybolt-ruby`
-- **Python:** `pip install skybolt-python`
+- **PHP:** `composer require jensroland/skybolt`
+- **Ruby:** `gem install skybolt`
+- **Python:** `pip install skybolt` (or: `uv add skybolt` / `poetry add skybolt`)
 - **Go:** `go get github.com/JensRoland/skybolt-go`
 
 Then, use the adapter to include Skybolt-managed assets in your HTML.
@@ -111,6 +111,7 @@ location = /skybolt-sw.js {
 **PHP (development):**
 
 ```php
+<?php
 // public/skybolt-sw.js (or use a router)
 header('Content-Type: application/javascript');
 header('Service-Worker-Allowed: /');
@@ -200,22 +201,23 @@ Requires Service Worker and Cache API support. Falls back gracefully to standard
 
 ## Publishing
 
-To publish a new version:
-
-1. Update the version in `packages/vite-plugin/package.json`
-2. Create a new tag with the format `vite-plugin-v*` (e.g., `vite-plugin-v1.0.0`)
+To publish a new version, run one command from the `packages/vite-plugin` directory:
 
 ```sh
-git add .
-git commit -m "chore: bump vite-plugin to v3.1.1"
-git tag vite-plugin-v3.1.1
+pnpm version patch   # 3.1.1 → 3.1.2
+pnpm version minor   # 3.1.1 → 3.2.0
+pnpm version major   # 3.1.1 → 4.0.0
 ```
 
-3. Push the tag to GitHub
+This automatically:
 
-```sh
-git push origin main --tags
-```
+1. Updates `package.json`
+2. Syncs version to `README.md` and the JS source files using `scripts/sync-version.js`
+3. Regenerates minified files
+4. Commits all changes
+5. Creates a git tag (e.g., `v3.1.2`)
+6. Triggers the `postversion` script, which creates the `vite-plugin-v*` tag and pushes to GitHub
+7. ....which triggers the publish workflow.
 
 The workflow uses `vite-plugin-v*` tags (not just `v*`) to differentiate from the adapter package tags. It also includes `--provenance` for supply chain security.
 

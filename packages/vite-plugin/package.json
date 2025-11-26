@@ -19,7 +19,9 @@
     "README.md"
   ],
   "scripts": {
-    "minify": "esbuild client.js --minify --outfile=client.min.js"
+    "minify": "esbuild client.js --minify --outfile=client.min.js && esbuild sw.js --minify --outfile=sw.min.js",
+    "version": "node scripts/sync-version.js && git add -A",
+    "postversion": "git tag vite-plugin-v$npm_package_version && git push origin main --tags"
   },
   "keywords": [
     "vite",
@@ -40,5 +42,8 @@
   },
   "devDependencies": {
     "esbuild": "^0.27.0"
-  }
+  },
+  "workspaces": [
+    "."
+  ]
 }

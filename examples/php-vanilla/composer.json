@@ -4,7 +4,7 @@
     "type": "project",
     "require": {
         "php": ">=8.1",
-        "skybolt/skybolt-php": "*"
+        "jensroland/skybolt": "*"
     },
     "repositories": [
         {

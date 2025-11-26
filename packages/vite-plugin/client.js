@@ -1,10 +1,10 @@
-/**
+/*!
  * Skybolt Client
- *
+ * @version 3.1.1
+ */
+/**
  * Registers Service Worker and coordinates cache state via cookies.
  * Extracts inlined assets and stores them in Cache API.
- *
- * @version 3.1.0
  */
 
 const CACHE_NAME = 'skybolt-v1'

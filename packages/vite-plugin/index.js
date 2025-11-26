@@ -12,7 +12,7 @@ import { resolve, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SKYBOLT_VERSION = '3.1.0'
+const SKYBOLT_VERSION = '3.1.1'
 
 /**
  * @typedef {Object} SkyboltPluginOptions
@@ -179,17 +179,9 @@ export function skybolt(options = {}) {
 
       if (existsSync(clientPath)) {
         clientScript = readFileSync(clientPath, 'utf-8')
-        log('Using minified client script')
       } else {
-        // Fall back to unminified version
-        const clientDevPath = resolve(__dirname, 'client.js')
-        if (existsSync(clientDevPath)) {
-          clientScript = readFileSync(clientDevPath, 'utf-8')
-          log('Using development client script (run `npm run minify` for production)')
-        } else {
-          console.error('[skybolt] Error: client.js not found')
-          return
-        }
+        console.error('[skybolt] Error: minified client-min.js not found')
+        return
       }
 
       // Build render map
@@ -218,15 +210,15 @@ export function skybolt(options = {}) {
       writeFileSync(renderMapPath, JSON.stringify(renderMap, null, 2))
       console.log(`[skybolt] Generated ${outDir}/render-map.json (${Object.keys(assets).length} assets)`)
 
-      // Copy Service Worker to build output
-      const swSourcePath = resolve(__dirname, 'sw.js')
+      // Copy minified Service Worker to build output
+      const swSourcePath = resolve(__dirname, 'sw.min.js')
       const swDestPath = resolve(buildOutDir, 'skybolt-sw.js')
 
       if (existsSync(swSourcePath)) {
         copyFileSync(swSourcePath, swDestPath)
         console.log(`[skybolt] Copied skybolt-sw.js to ${buildOutDir}/`)
       } else {
-        console.error('[skybolt] Error: sw.js not found in plugin directory')
+        console.error('[skybolt] Error: sw.min.js not found in plugin directory')
       }
     }
   }

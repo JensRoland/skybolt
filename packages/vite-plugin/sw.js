@@ -1,10 +1,10 @@
-/**
+/*!
  * Skybolt Service Worker
- *
+ * @version 3.1.1
+ */
+/**
  * Cache-first Service Worker for Skybolt assets.
  * Intercepts requests for JS/CSS and serves from Cache API.
- *
- * @version 3.1.0
  */
 
 const CACHE_NAME = 'skybolt-v1'

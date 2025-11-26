@@ -2,15 +2,30 @@
 
 High-performance asset caching for multi-page applications.
 
-**Version:** 3.1.0 | **Status:** Beta | **License:** MIT
+**Version:** 3.1.1 | **Status:** Beta | **License:** MIT
 
-**Works with:** PHP, Python, Ruby, Go (and easy to add more)
+**Works with:** PHP, Python, Ruby, Go (and more to come)
+
+![Language logos](./readme-assets/language-dark.webp#gh-dark-mode-only)
+![Language logos](./readme-assets/language-light.webp#gh-light-mode-only)
 
 ## What is Skybolt?
 
-Skybolt eliminates HTTP requests for cached assets on repeat visits. By combining Service Workers with intelligent server-side rendering, assets load from cache in ~5ms with zero network overhead.
+Skybolt is a web application caching library for the performance-obsessed who want to squeeze every last drop of speed out of their multi-page applications.
+
+Skybolt eliminates HTTP requests for JS/CSS assets by inlining them in the HTML page on a user's first visit, and caching the inlined payloads using Service Workers and the Cache API. On return visits, assets load from cache in ~5ms with zero network overhead.
 
 ### How It Works
+
+Without Skybolt, your first visit loads assets normally:
+
+![Sequence diagram - normal web request](./readme-assets/sequence-diagram-normal-dark.webp#gh-dark-mode-only)
+![Sequence diagram - normal web request](./readme-assets/sequence-diagram-normal-light.webp#gh-light-mode-only)
+
+With Skybolt, the first visit inlines assets and caches them via Service Worker:
+
+![Sequence diagram - with Skybolt](./readme-assets/sequence-diagram-skybolt-dark.webp#gh-dark-mode-only)
+![Sequence diagram - with Skybolt](./readme-assets/sequence-diagram-skybolt-light.webp#gh-light-mode-only)
 
 **First Visit:**
 
@@ -18,7 +33,7 @@ Skybolt eliminates HTTP requests for cached assets on repeat visits. By combinin
 2. Service Worker registers and caches the inlined content
 3. Cookie records which asset versions are cached
 
-**Repeat Visit:**
+**Return Visit:**
 
 1. Server reads cookie, sees assets are cached
 2. Server sends regular `<link>` and `<script>` tags
@@ -31,6 +46,26 @@ Skybolt eliminates HTTP requests for cached assets on repeat visits. By combinin
 2. Server detects version mismatch via cookie
 3. Server inlines updated assets
 4. Cache automatically invalidated
+
+### Is this even a good idea?
+
+Inlining assets makes the initial HTML larger, but eliminates multiple HTTP requests. Return visits will make no network requests for the cached assets.
+
+However, using plain old versioned asset URLs and the right cache headers achieves similar results on return visits (no network requests for the cached assets) without the complexity of a Service Worker and the Cache API.
+
+So the question is really all about that first visit: *Is a single large payload faster than multiple smaller ones?*
+
+Well, it depends:
+
+- Since HTTP/2, multiple requests are cheaper and we have proper response multiplexing so the benefits of inlining are much less pronounced.
+- If your assets are small (under ~50KB total), inlining is almost always faster.
+- If your assets are large (hundreds of KBs), the initial HTML bloat may outweigh the benefits.
+- If you inline assets which should have been lazyloaded, you will actively hurt performance.
+- If you use Skybolt only for critical assets (e.g., critical CSS, core JS) and document fragments, you will likely see the best results.
+
+If you are trying to optimize your site, Skybolt is not your first port of call. First, reduce your total critical payload to less than 170KB, optimize images, use a CDN, and implement lazy loading for non-critical assets. If you are still front-loading below-the-fold images without proper cache headers, you have bigger problems than Skybolt can solve.
+
+However, if you are here, you are likely more performance-obsessed than average, so give Skybolt a try and measure the results!
 
 ## Quick Start
 
@@ -68,7 +103,7 @@ Choose your language:
 <summary><strong>PHP</strong></summary>
 
 ```bash
-composer require jensroland/skybolt-php
+composer require jensroland/skybolt
 ```
 
 ```php
@@ -91,8 +126,8 @@ $sb = new Skybolt\Skybolt(__DIR__ . '/dist/.skybolt/render-map.json');
 <summary><strong>Python</strong></summary>
 
 ```bash
-pip install skybolt-python
-# or: uv add skybolt-python
+pip install skybolt
+# or: uv add skybolt
 ```
 
 ```python
@@ -119,7 +154,7 @@ sb = Skybolt("dist/.skybolt/render-map.json", cookies=request.cookies)
 
 ```ruby
 # Gemfile
-gem "skybolt-ruby"
+gem "skybolt"
 ```
 
 ```ruby
@@ -181,10 +216,10 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 | Package                                       | Description                        | Install                                   |
 | --------------------------------------------- | ---------------------------------- | ----------------------------------------- |
 | [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
-| [skybolt-php](packages/php/)                  | PHP adapter                        | `composer require jensroland/skybolt-php` |
-| [skybolt-python](packages/python/)            | Python adapter                     | `pip install skybolt-python`              |
-| [skybolt-ruby](packages/ruby/)                | Ruby adapter                       | `gem install skybolt-ruby`                |
-| [skybolt-go](packages/go/)                    | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
+| [skybolt (PHP)](packages/php/)                | PHP adapter                        | `composer require jensroland/skybolt`     |
+| [skybolt (Python)](packages/python/)          | Python adapter                     | `pip install skybolt`                     |
+| [skybolt (Ruby)](packages/ruby/)              | Ruby adapter                       | `gem install skybolt`                     |
+| [skybolt (Go)](packages/go/)                  | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
 
 ## Examples
 

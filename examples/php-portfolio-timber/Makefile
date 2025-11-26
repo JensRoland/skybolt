@@ -38,7 +38,7 @@ open:
 	open http://localhost:8080/
 
 refresh-deps:
-	rm -rf vendor && composer update && composer install && docker-compose restart
+	rm -rf vendor && composer update && composer install && bun install && bun run build && docker-compose restart
 
 # Show this help message
 help:
