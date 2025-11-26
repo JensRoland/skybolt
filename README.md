@@ -1,5 +1,7 @@
 # Skybolt
 
+[Skybolt animated header](https://github.com/user-attachments/assets/3cae1e2a-aefb-45a2-83d7-e86ad365cca8)
+
 High-performance asset caching for multi-page applications.
 
 **Version:** 3.1.1 | **Status:** Beta | **License:** MIT
@@ -204,7 +206,22 @@ sb.Script("src/js/app.js", true)
 
 ```bash
 npm run build
+```
+
+Then start your server:
+
+```bash
+# PHP
 php -S localhost:8080 -t public
+
+# Python (Django)
+python manage.py runserver
+
+# Ruby (Rails)
+rails server
+
+# Go
+go run main.go
 ```
 
 ### 4. Serve the Service Worker
@@ -250,7 +267,7 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 ┌─────────────────────────────────────────────────────────────┐
 │                    RUNTIME (Server)                         │
 ├─────────────────────────────────────────────────────────────┤
-│  Server adapter (PHP/Ruby/Python/etc)                       │
+│  Server adapter (Go/PHP/Python/Ruby/etc)                    │
 │  • Loads render-map.json                                    │
 │  • Reads sb_assets cookie                                   │
 │  • Returns inline or external tags                          │
