@@ -1,6 +1,6 @@
 /*!
  * Skybolt Service Worker
- * @version 3.1.1
+ * @version 3.3.0
  */
 /**
  * Cache-first Service Worker for Skybolt assets.

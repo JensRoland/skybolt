@@ -1,6 +1,6 @@
 /*!
  * Skybolt Client
- * @version 3.1.1
+ * @version 3.3.0
  */
 /**
  * Registers Service Worker and coordinates cache state via cookies.

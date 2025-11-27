@@ -4,7 +4,7 @@
 
 High-performance asset caching for multi-page applications.
 
-**Version:** 3.1.1 | **Status:** Beta | **License:** MIT
+**Version:** 3.3.0 | **Status:** Beta | **License:** MIT
 
 **Works with:** PHP, Python, Ruby, Go (and more to come)
 
