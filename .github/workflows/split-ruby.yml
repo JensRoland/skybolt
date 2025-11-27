@@ -1,4 +1,5 @@
 name: Split Ruby Package
+run-name: Push to Ruby repo for ${{ github.ref }}
 
 on:
   push:

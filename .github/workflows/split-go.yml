@@ -1,4 +1,5 @@
 name: Split Go Package
+run-name: Push to Go repo for ${{ github.ref }}
 
 on:
   push:

@@ -1,4 +1,5 @@
 name: Split PHP Package
+run-name: Push to PHP repo for ${{ github.ref }}
 
 on:
   push:
