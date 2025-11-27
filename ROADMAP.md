@@ -20,11 +20,11 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [X] **Language specific repos** - Add 'splitter' Github Actions for each supported language - all the languages get a repo!
 
-- [ ] **Async CSS** - Make it possible to actually load non-critical CSS in a non-blocking way while still using Service Worker caching; preload plus JS to apply styles once fetched? `<link rel="preload" href="path/to/mystylesheet.css" as="style" onload="this.rel='stylesheet'">` is pretty neat
+- [X] **Async CSS** - Make it possible to actually load non-critical CSS in a non-blocking way while still using Service Worker caching; preload plus JS to apply styles once fetched? `<link rel="preload" href="path/to/mystylesheet.css" as="style" onload="this.rel='stylesheet'">` is pretty neat
 
 - [ ] **HTML Fragment Caching** - Support caching of HTML fragments (e.g., partials, components) alongside CSS/JS assets
 
-- [ ] **README Look&Feel** - Revamp READMEs with better visuals & diagrams; logo/header, before/after performance charts
+- [X] **README Look&Feel** - Revamp READMEs with better visuals & diagrams; logo/header, before/after performance charts
 
 - [X] **Publish skybolt-php to Packagist** - Make it installable via Composer; set up GitHub Actions for automatic releases
 - [X] **Publish skybolt-python to PyPI** - Make it installable via pip; set up GitHub Actions for automatic releases

@@ -162,11 +162,12 @@ skybolt({
 ```php
 $sb = new Skybolt\Skybolt($renderMapPath, $cookies);
 
-$sb->css('src/css/main.css');           // Render CSS
-$sb->script('src/js/app.js');           // Render JS (ES module)
-$sb->script('src/js/old.js', false);    // Render JS (classic)
-$sb->launchScript();                     // Render client launcher
-$sb->getAssetUrl('src/css/main.css');   // Get URL (manual use)
+$sb->css('src/css/main.css');                // Render CSS (blocking)
+$sb->css('src/css/main.css', async: true);   // Render CSS (non-blocking)
+$sb->script('src/js/app.js');                // Render JS (ES module)
+$sb->script('src/js/old.js', module: false); // Render JS (classic)
+$sb->launchScript();                         // Render client launcher
+$sb->getAssetUrl('src/css/main.css');        // Get URL (manual use)
 ```
 
 ### Client API (Browser)

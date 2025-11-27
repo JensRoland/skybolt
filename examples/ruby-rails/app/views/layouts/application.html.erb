@@ -11,8 +11,8 @@
     <%# Skybolt client launcher - must be in <head> %>
     <%= raw skybolt.launch_script %>
 
-    <%# Main CSS - loaded async, cached by Service Worker %>
-    <%= raw skybolt.css("app/assets/stylesheets/application.css") %>
+    <%# Main CSS - loaded async (non-blocking), cached by Service Worker %>
+    <%= raw skybolt.css("app/assets/stylesheets/application.css", async: true) %>
 </head>
 <body>
     <%= yield %>

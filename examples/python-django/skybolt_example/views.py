@@ -21,7 +21,7 @@ def index(request):
     # Pre-render assets for Django template (Django doesn't support method calls with args)
     return render(request, "index.html", {
         "critical_css": sb.css("static/css/critical.css"),
-        "app_css": sb.css("static/css/app.css"),
+        "app_css": sb.css("static/css/app.css", async_load=True),
         "app_js": sb.script("static/js/app.js"),
         "launch_script": sb.launch_script(),
         "version": Skybolt.VERSION,

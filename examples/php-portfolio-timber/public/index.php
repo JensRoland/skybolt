@@ -26,11 +26,11 @@
     <?php // Skybolt launcher script ?>
     <?= $sb->launchScript() ?>
 
-    <?php // Main CSS - async loaded ?>
-    <?= $sb->css('src/css/main.css') ?>
+    <?php // Main CSS - loaded async (non-blocking) ?>
+    <?= $sb->css('src/css/main.css', async: true) ?>
 
-    <?php // Web fonts - async loaded ?>
-    <?= $sb->css('src/css/fonts-inline.css') ?>
+    <?php // Web fonts - loaded async (non-blocking) ?>
+    <?= $sb->css('src/css/fonts-inline.css', async: true) ?>
 
     <?php // Concatenated JavaScript bundle (legacy jQuery code - not a module) ?>
     <?= $sb->script('src/js/scripts.js', module: false) ?>

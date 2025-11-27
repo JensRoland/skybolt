@@ -11,8 +11,8 @@
     {{-- Skybolt client launcher - must be in <head> --}}
     @skyboltLaunch
 
-    {{-- Main CSS - loaded async, cached by Service Worker --}}
-    @skyboltCss('resources/css/app.css')
+    {{-- Main CSS - loaded async (non-blocking), cached by Service Worker --}}
+    @skyboltCss('resources/css/app.css', true)
 </head>
 <body>
     <div class="container">

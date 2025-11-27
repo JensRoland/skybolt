@@ -6,13 +6,13 @@
     <title>Skybolt Gin Example</title>
 
     {{/* Critical CSS - inlined on first visit, cached thereafter */}}
-    {{ .sb.CSS "static/css/critical.css" | safe }}
+    {{ .sb.CSS "static/css/critical.css" false | safe }}
 
     {{/* Skybolt client launcher - must be in <head> */}}
     {{ .sb.LaunchScript | safe }}
 
-    {{/* Main CSS - loaded async, cached by Service Worker */}}
-    {{ .sb.CSS "static/css/app.css" | safe }}
+    {{/* Main CSS - loaded async (non-blocking), cached by Service Worker */}}
+    {{ .sb.CSS "static/css/app.css" true | safe }}
 </head>
 <body>
     <div class="container">

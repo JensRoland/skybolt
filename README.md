@@ -236,7 +236,7 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 | [skybolt (PHP)](https://packagist.org/packages/jensroland/skybolt)         | PHP adapter                        | `composer require jensroland/skybolt`     |
 | [skybolt (Python)](https://pypi.org/project/skybolt/)                      | Python adapter                     | `pip install skybolt`                     |
 | [skybolt (Ruby)](https://rubygems.org/gems/skybolt)                        | Ruby adapter                       | `gem install skybolt`                     |
-| [skybolt (Go)](https://pkg.go.dev/github.com/JensRoland/skybolt-go)       | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
+| [skybolt (Go)](https://pkg.go.dev/github.com/JensRoland/skybolt-go)        | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
 
 ## Examples
 
@@ -305,12 +305,37 @@ skybolt({
 
 All adapters share the same API pattern:
 
-| Method     | PHP                        | Python                    | Ruby                  | Go                       |
-| ---------- | -------------------------- | ------------------------- | --------------------- | ------------------------ |
-| Render CSS | `$sb->css($entry)`         | `sb.css(entry)`           | `sb.css(entry)`       | `sb.CSS(entry)`          |
-| Render JS  | `$sb->script($entry)`      | `sb.script(entry)`        | `sb.script(entry)`    | `sb.Script(entry, true)` |
-| Launcher   | `$sb->launchScript()`      | `sb.launch_script()`      | `sb.launch_script`    | `sb.LaunchScript()`      |
-| Get URL    | `$sb->getAssetUrl($entry)` | `sb.get_asset_url(entry)` | `sb.asset_url(entry)` | `sb.GetAssetURL(entry)`  |
+| Method     | PHP                              | Python                          | Ruby                        | Go                             |
+| ---------- | -------------------------------- | ------------------------------- | --------------------------- | ------------------------------ |
+| Render CSS | `$sb->css($entry, $async)`       | `sb.css(entry, async_load)`     | `sb.css(entry, async:)`     | `sb.CSS(entry, async)`         |
+| Render JS  | `$sb->script($entry)`            | `sb.script(entry)`              | `sb.script(entry)`          | `sb.Script(entry, true)`       |
+| Launcher   | `$sb->launchScript()`            | `sb.launch_script()`            | `sb.launch_script`          | `sb.LaunchScript()`            |
+| Get URL    | `$sb->getAssetUrl($entry)`       | `sb.get_asset_url(entry)`       | `sb.asset_url(entry)`       | `sb.GetAssetURL(entry)`        |
+
+#### Async CSS Loading
+
+The `async` parameter enables non-render-blocking CSS loading:
+
+```php
+// PHP
+$sb->css('src/css/main.css', async: true);
+
+// Python
+sb.css("src/css/main.css", async_load=True)
+
+// Ruby
+sb.css("src/css/main.css", async: true)
+
+// Go
+sb.CSS("src/css/main.css", true)
+```
+
+When `async` is enabled:
+
+- **First visit:** Uses `media="print"` trick - CSS is parsed but not applied until `onload` swaps to `media="all"`
+- **Repeat visit:** Uses `<link rel="preload">` with `onload` to apply styles non-blocking
+
+This is ideal for non-critical CSS that shouldn't block initial render.
 
 See each adapter's README for full API documentation.
 

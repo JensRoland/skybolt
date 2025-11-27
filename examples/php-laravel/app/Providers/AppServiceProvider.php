@@ -58,9 +58,9 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Render CSS asset (called by directive).
      */
-    public static function css(string $entry): string
+    public static function css(string $entry, bool $async = false): string
     {
-        return self::skybolt()->css($entry);
+        return self::skybolt()->css($entry, $async);
     }
 
     /**

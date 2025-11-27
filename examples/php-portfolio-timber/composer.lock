@@ -9,11 +9,11 @@
     "packages-dev": [
         {
             "name": "jensroland/skybolt",
-            "version": "3.1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "../../packages/php",
-                "reference": "ff746b8c384d3cd77d1751443339b8c4db0cf7c3"
+                "reference": "00ea4a11ac7b5e6180b85a921dffde99a127c442"
             },
             "require": {
                 "php": ">=8.1"

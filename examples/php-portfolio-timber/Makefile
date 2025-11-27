@@ -37,6 +37,10 @@ clean:
 open:
 	open http://localhost:8080/
 
+# Build frontend assets
+build-assets:
+	bun install && bun run build
+
 # Refresh PHP dependencies
 refresh-deps:
 	rm -rf vendor && composer update && composer install && bun install && bun run build && docker compose restart

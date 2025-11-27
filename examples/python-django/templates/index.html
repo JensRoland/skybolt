@@ -11,7 +11,7 @@
     {# Skybolt client launcher - must be in <head> #}
     {{ launch_script|safe }}
 
-    {# Main CSS - loaded async, cached by Service Worker #}
+    {# Main CSS - loaded async (non-blocking), cached by Service Worker #}
     {{ app_css|safe }}
 </head>
 <body>

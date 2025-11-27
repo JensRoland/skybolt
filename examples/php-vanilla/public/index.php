@@ -20,14 +20,14 @@ $sb = new Skybolt(__DIR__ . '/../dist/.skybolt/render-map.json');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skybolt Minimal Example</title>
 
-    <?php // Critical CSS - inlined on first visit, cached thereafter ?> 
+    <?php // Critical CSS - inlined on first visit, cached thereafter ?>
     <?= $sb->css('src/css/critical.css') ?>
 
-    <?php // Skybolt client launcher - must be in <head> ?> 
+    <?php // Skybolt client launcher - must be in <head> ?>
     <?= $sb->launchScript() ?>
 
-    <?php // Main CSS - loaded async, cached by Service Worker ?> 
-    <?= $sb->css('src/css/main.css') ?> 
+    <?php // Main CSS - loaded async (non-blocking), cached by Service Worker ?>
+    <?= $sb->css('src/css/main.css', async: true) ?> 
 </head>
 <body>
     <div class="container">
