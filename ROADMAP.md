@@ -22,8 +22,6 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [X] **Async CSS** - Make it possible to actually load non-critical CSS in a non-blocking way while still using Service Worker caching; preload plus JS to apply styles once fetched? `<link rel="preload" href="path/to/mystylesheet.css" as="style" onload="this.rel='stylesheet'">` is pretty neat
 
-- [ ] **HTML Fragment Caching** - Support caching of HTML fragments (e.g., partials, components) alongside CSS/JS assets
-
 - [X] **README Look&Feel** - Revamp READMEs with better visuals & diagrams; logo/header, before/after performance charts
 
 - [X] **Publish skybolt-php to Packagist** - Make it installable via Composer; set up GitHub Actions for automatic releases
@@ -48,6 +46,8 @@ This document outlines the planned features and improvements for Skybolt.
 **Target:** 2026 | **Focus:** Anything not prioritized for 3.x
 
 - [ ] **Cache Digest** - Replace manifest-based asset discovery with cache digests for smaller cookies (Cuckoo filter?). See <https://calendar.perfplanet.com/2016/cache-digests-http2-server-push/>
+
+- [ ] **HTML Fragment Caching** - Support caching of HTML fragments (e.g., partials, components) alongside CSS/JS assets. The challenge is we've designed Skybolt around a build-time asset definition model, so you'd need to define your assets upfront - in the Vite config. And even if we limit it to known reusable components, different stacks have very different methods for rendering those, so it would make it tricky to implement in a generic way.
 
 - [ ] **Laravel Integration** - Framework integration with Laravel (Blade directives), include in skybolt-php package
 - [ ] **Express.js Integration** - Framework integration with Express.js, include in skybolt-node package
