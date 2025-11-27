@@ -12,7 +12,7 @@ import { resolve, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SKYBOLT_VERSION = '3.1.1'
+const SKYBOLT_VERSION = '3.2.0'
 
 /**
  * @typedef {Object} SkyboltPluginOptions

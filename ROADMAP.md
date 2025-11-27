@@ -37,7 +37,7 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [ ] **ASP.NET Core adapter package** - C# adapter NuGet package (`Skybolt.AspNetCore`)
 
-- [ ] **Test Suite** - smoke test all packages and examples! Spin up server, use aheadless browser.
+- [X] **Test Suite** - smoke test all packages and examples! Spin up server, use aheadless browser.
   - Hit without cookie, check console logs, check markup, check cache status
   - Hit with cookie, check console logs, check markup, check cache status again
   - Hit with cookie again, check console logs, check markup, check cache status

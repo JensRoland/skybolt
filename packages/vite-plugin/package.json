@@ -1,6 +1,6 @@
 {
   "name": "@skybolt/vite-plugin",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "Vite plugin for Skybolt - High-performance asset caching for multi-page applications",
   "type": "module",
   "author": "Jens Roland <mail@jensroland.com> (https://jensroland.com)",
@@ -21,7 +21,7 @@
   "scripts": {
     "minify": "esbuild client.js --minify --outfile=client.min.js && esbuild sw.js --minify --outfile=sw.min.js",
     "version": "node scripts/sync-version.js && git add -A",
-    "postversion": "git tag vite-plugin-v$npm_package_version && git push origin main --tags"
+    "postversion": "git commit --amend --no-edit && git tag vite-plugin-v$npm_package_version && git push origin main --tags"
   },
   "keywords": [
     "vite",
