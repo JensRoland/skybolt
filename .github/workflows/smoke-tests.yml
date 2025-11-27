@@ -304,10 +304,14 @@ jobs:
         working-directory: tests
         run: bunx playwright install chromium
 
+      - name: Build Go server
+        working-directory: examples/go-gin
+        run: go build -o server main.go
+
       - name: Start Go server
         working-directory: examples/go-gin
         run: |
-          PORT=8083 go run main.go &
+          PORT=8083 ./server &
           sleep 3
           curl -s http://localhost:8083/ > /dev/null || exit 1
 
@@ -432,12 +436,14 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: examples/ruby-rails
 
       - name: Install vite-plugin dependencies
         working-directory: packages/vite-plugin
         run: pnpm install
+
+      - name: Install Ruby dependencies
+        working-directory: examples/ruby-rails
+        run: bundle install
 
       - name: Install Node dependencies (example)
         working-directory: examples/ruby-rails
@@ -458,7 +464,7 @@ jobs:
       - name: Start Rails server
         working-directory: examples/ruby-rails
         run: |
-          bundle exec rails server -p 8085 &
+          bundle exec rackup -p 8085 &
           sleep 5
           curl -s http://localhost:8085/ > /dev/null || exit 1
 
