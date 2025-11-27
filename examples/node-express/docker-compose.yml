@@ -1,0 +1,18 @@
+services:
+  node-express:
+    build: .
+    ports:
+      - "8086:8086"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ../../packages/javascript:/packages/javascript:ro
+      - ../../packages/vite-plugin:/packages/vite-plugin:ro
+    working_dir: /app
+    command: node server.js
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8086/"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 5s

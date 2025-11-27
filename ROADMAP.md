@@ -31,7 +31,7 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [X] **Publish tooling** - Publishing the packages should be as simple as `./publish.sh patch|minor|major` from each package directory
 
-- [ ] **Bun/Node.js adapter package** - JavaScript/TypeScript adapter NPM package (`@skybolt/server-adapter`)
+- [X] **Bun/Node.js adapter package** - JavaScript/TypeScript adapter NPM package (`@skybolt/server-adapter`)
 
 - [ ] **ASP.NET Core adapter package** - C# adapter NuGet package (`Skybolt.AspNetCore`)
 
@@ -50,7 +50,7 @@ This document outlines the planned features and improvements for Skybolt.
 - [ ] **HTML Fragment Caching** - Support caching of HTML fragments (e.g., partials, components) alongside CSS/JS assets. The challenge is we've designed Skybolt around a build-time asset definition model, so you'd need to define your assets upfront - in the Vite config. And even if we limit it to known reusable components, different stacks have very different methods for rendering those, so it would make it tricky to implement in a generic way.
 
 - [ ] **Laravel Integration** - Framework integration with Laravel (Blade directives), include in skybolt-php package
-- [ ] **Express.js Integration** - Framework integration with Express.js, include in skybolt-node package
+- [ ] **Express.js Integration** - Framework integration with Express.js, include in skybolt-server-adapter package
 - [ ] **Gin Integration** - Framework integration with Gin, include in skybolt-go package
 - [ ] **Rails Integration** - Framework integration with Rails, include in skybolt-ruby package
 - [ ] **Django Integration** - Framework integration with Django (middleware, template tags?), include in skybolt-python package
@@ -62,4 +62,4 @@ This document outlines the planned features and improvements for Skybolt.
 
 ---
 
-**Last Updated:** November 25, 2025
+**Last Updated:** November 27, 2025

@@ -1,0 +1,31 @@
+name: Split JavaScript Package
+run-name: Push to JavaScript repo for "${{ github.event.head_commit.message }}"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/javascript/**'
+  workflow_dispatch:
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Split and push to skybolt-js repo
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.JAVASCRIPT_PACKAGE_DEPLOY_KEY }}
+        with:
+          source-directory: 'packages/javascript'
+          user-email: 'mail@jensroland.com'
+          destination-github-username: 'JensRoland'
+          destination-repository-name: 'skybolt-js'
+          target-branch: main
+          create-target-branch-if-needed: true
+          commit-message: 'Sync from monorepo: ${{ github.sha }}'

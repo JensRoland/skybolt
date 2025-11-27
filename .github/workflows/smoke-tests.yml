@@ -407,6 +407,76 @@ jobs:
 
   #################################################################################################
   #
+  # Tests for Node Express example
+  #
+  #################################################################################################
+
+  test-node-express:
+    name: Node Express Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install vite-plugin dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Install server-adapter dependencies
+        working-directory: packages/javascript
+        run: npm install
+
+      - name: Install Node dependencies (example)
+        working-directory: examples/node-express
+        run: npm install
+
+      - name: Build example
+        working-directory: examples/node-express
+        run: npm run build
+
+      - name: Install test dependencies
+        working-directory: tests
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: tests
+        run: bunx playwright install chromium
+
+      - name: Start Node server
+        working-directory: examples/node-express
+        run: |
+          node server.js &
+          sleep 3
+          curl -s http://localhost:8086/ > /dev/null || exit 1
+
+      - name: Run smoke tests
+        working-directory: tests
+        run: bunx playwright test e2e/node-express.spec.ts
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: node-express-playwright-report
+          path: tests/playwright-report/
+          retention-days: 7
+
+  #################################################################################################
+  #
   # Tests for Ruby Rails example
   #
   #################################################################################################

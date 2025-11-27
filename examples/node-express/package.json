@@ -1,0 +1,20 @@
+{
+  "name": "skybolt-express-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "node server.js"
+  },
+  "devDependencies": {
+    "@skybolt/vite-plugin": "file:../../packages/vite-plugin",
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "@skybolt/server-adapter": "file:../../packages/javascript",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.0"
+  }
+}
