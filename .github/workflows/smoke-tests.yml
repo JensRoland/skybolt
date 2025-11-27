@@ -8,6 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
+
+  #################################################################################################
+  #
+  # Tests for PHP Vanilla example
+  #
+  #################################################################################################
+
   test-php-vanilla:
     name: PHP Vanilla Example
     runs-on: ubuntu-latest
@@ -21,6 +28,14 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "::add-path::${HOME}/.bun/bin"
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -28,7 +43,7 @@ jobs:
 
       - name: Install vite-plugin dependencies
         working-directory: packages/vite-plugin
-        run: npm install
+        run: pnpm install
 
       - name: Install Composer dependencies
         working-directory: examples/php-vanilla
@@ -44,20 +59,107 @@ jobs:
 
       - name: Install test dependencies
         working-directory: tests
-        run: npm install
+        run: bun install
 
       - name: Install Playwright browsers
         working-directory: tests
-        run: npx playwright install chromium
+        run: bunx playwright install chromium
+
+      - name: Start PHP server
+        working-directory: examples/php-vanilla
+        run: |
+          php -S localhost:8080 -t dist dist/router.php &
+          sleep 3
+          curl -s http://localhost:8080/ > /dev/null || exit 1
 
       - name: Run smoke tests
         working-directory: tests
-        run: make test
+        run: bunx playwright test e2e/php-vanilla.spec.ts
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
+          name: php-vanilla-playwright-report
+          path: tests/playwright-report/
+          retention-days: 7
+
+  #################################################################################################
+  #
+  # Tests for PHP Portfolio Timber example
+  #
+  #################################################################################################
+
+  test-php-portfolio-timber:
+    name: PHP Portfolio Timber Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "::add-path::${HOME}/.bun/bin"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Install vite-plugin dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Install Composer dependencies
+        working-directory: examples/php-portfolio-timber
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Install Node dependencies (example)
+        working-directory: examples/php-portfolio-timber
+        run: bun install
+
+      - name: Build example
+        working-directory: examples/php-portfolio-timber
+        run: bun run build
+
+      - name: Install test dependencies
+        working-directory: tests
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: tests
+        run: bunx playwright install chromium
+
+      - name: Start Docker container
+        working-directory: examples/php-portfolio-timber
+        run: |
+          PORT=8081 docker-compose up --build -d
+          sleep 5
+          curl -s http://localhost:8081/ > /dev/null || exit 1
+
+      - name: Run smoke tests
+        working-directory: tests
+        run: bunx playwright test e2e/php-portfolio-timber.spec.ts
+
+      - name: Stop Docker container
+        working-directory: examples/php-portfolio-timber
+        if: always()
+        run: docker-compose down
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: php-portfolio-timber-playwright-report
           path: tests/playwright-report/
           retention-days: 7

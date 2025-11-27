@@ -28,6 +28,12 @@ docker-up:
 docker-down:
 	docker-compose down
 
-# Run smoke tests (requires Docker)
-test: docker-up
-	cd ../../tests && npm test; result=$$?; cd ../examples/php-vanilla && docker-compose down; exit $$result
+# Run smoke tests (start server, run tests, stop server)
+test:
+	@echo "Building assets..."
+	@npm run build
+	@echo "Starting PHP server..."
+	@php -S localhost:8080 -t dist dist/router.php > /dev/null 2>&1 & echo $$! > .server.pid
+	@sleep 2
+	@echo "Running tests..."
+	@cd ../../tests && npm test -- e2e/php-vanilla.spec.ts; result=$$?; kill `cat ../examples/php-vanilla/.server.pid` 2>/dev/null; rm -f ../examples/php-vanilla/.server.pid; exit $$result
