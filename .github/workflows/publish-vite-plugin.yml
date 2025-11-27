@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'vite-plugin-v*'
+  workflow_dispatch:
 
 jobs:
   publish:
