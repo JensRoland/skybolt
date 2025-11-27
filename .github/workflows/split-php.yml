@@ -1,5 +1,5 @@
 name: Split PHP Package
-run-name: Push to PHP repo for ${{ github.ref }}
+run-name: Push to PHP repo for "${{ github.event.head_commit.message }}"
 
 on:
   push:

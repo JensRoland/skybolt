@@ -1,5 +1,5 @@
 name: Split Python Package
-run-name: Push to Python repo for ${{ github.ref }}
+run-name: Push to Python repo for "${{ github.event.head_commit.message }}"
 
 on:
   push:
