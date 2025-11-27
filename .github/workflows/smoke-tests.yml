@@ -166,3 +166,310 @@ jobs:
           name: php-portfolio-timber-playwright-report
           path: tests/playwright-report/
           retention-days: 7
+
+  #################################################################################################
+  #
+  # Tests for PHP Laravel example
+  #
+  #################################################################################################
+
+  test-php-laravel:
+    name: PHP Laravel Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> $GITHUB_PATH
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install vite-plugin dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Install Composer dependencies
+        working-directory: examples/php-laravel
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Setup Laravel environment
+        working-directory: examples/php-laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Install Node dependencies (example)
+        working-directory: examples/php-laravel
+        run: npm install
+
+      - name: Build example
+        working-directory: examples/php-laravel
+        run: npm run build
+
+      - name: Install test dependencies
+        working-directory: tests
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: tests
+        run: bunx playwright install chromium
+
+      - name: Start PHP server
+        working-directory: examples/php-laravel
+        run: |
+          php -S localhost:8082 -t public public/router.php &
+          sleep 3
+          curl -s http://localhost:8082/ > /dev/null || exit 1
+
+      - name: Run smoke tests
+        working-directory: tests
+        run: bunx playwright test e2e/php-laravel.spec.ts
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: php-laravel-playwright-report
+          path: tests/playwright-report/
+          retention-days: 7
+
+  #################################################################################################
+  #
+  # Tests for Go Gin example
+  #
+  #################################################################################################
+
+  test-go-gin:
+    name: Go Gin Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> $GITHUB_PATH
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install vite-plugin dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Install Go dependencies
+        working-directory: examples/go-gin
+        run: go mod tidy
+
+      - name: Install Node dependencies (example)
+        working-directory: examples/go-gin
+        run: npm install
+
+      - name: Build example
+        working-directory: examples/go-gin
+        run: npm run build
+
+      - name: Install test dependencies
+        working-directory: tests
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: tests
+        run: bunx playwright install chromium
+
+      - name: Start Go server
+        working-directory: examples/go-gin
+        run: |
+          PORT=8083 go run main.go &
+          sleep 3
+          curl -s http://localhost:8083/ > /dev/null || exit 1
+
+      - name: Run smoke tests
+        working-directory: tests
+        run: bunx playwright test e2e/go-gin.spec.ts
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: go-gin-playwright-report
+          path: tests/playwright-report/
+          retention-days: 7
+
+  #################################################################################################
+  #
+  # Tests for Python Django example
+  #
+  #################################################################################################
+
+  test-python-django:
+    name: Python Django Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> $GITHUB_PATH
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install vite-plugin dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Install Python dependencies
+        working-directory: examples/python-django
+        run: uv sync
+
+      - name: Install Node dependencies (example)
+        working-directory: examples/python-django
+        run: npm install
+
+      - name: Build example
+        working-directory: examples/python-django
+        run: npm run build
+
+      - name: Install test dependencies
+        working-directory: tests
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: tests
+        run: bunx playwright install chromium
+
+      - name: Start Django server
+        working-directory: examples/python-django
+        run: |
+          uv run python manage.py runserver 8084 &
+          sleep 3
+          curl -s http://localhost:8084/ > /dev/null || exit 1
+
+      - name: Run smoke tests
+        working-directory: tests
+        run: bunx playwright test e2e/python-django.spec.ts
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: python-django-playwright-report
+          path: tests/playwright-report/
+          retention-days: 7
+
+  #################################################################################################
+  #
+  # Tests for Ruby Rails example
+  #
+  #################################################################################################
+
+  test-ruby-rails:
+    name: Ruby Rails Example
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PNPM globally
+        run: npm install -g pnpm
+
+      - name: Install Bun globally
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> $GITHUB_PATH
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: examples/ruby-rails
+
+      - name: Install vite-plugin dependencies
+        working-directory: packages/vite-plugin
+        run: pnpm install
+
+      - name: Install Node dependencies (example)
+        working-directory: examples/ruby-rails
+        run: npm install
+
+      - name: Build example
+        working-directory: examples/ruby-rails
+        run: npm run build
+
+      - name: Install test dependencies
+        working-directory: tests
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: tests
+        run: bunx playwright install chromium
+
+      - name: Start Rails server
+        working-directory: examples/ruby-rails
+        run: |
+          bundle exec rails server -p 8085 &
+          sleep 5
+          curl -s http://localhost:8085/ > /dev/null || exit 1
+
+      - name: Run smoke tests
+        working-directory: tests
+        run: bunx playwright test e2e/ruby-rails.spec.ts
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ruby-rails-playwright-report
+          path: tests/playwright-report/
+          retention-days: 7

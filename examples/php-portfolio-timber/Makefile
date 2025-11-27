@@ -3,23 +3,23 @@
 
 # Start the development server
 serve:
-	docker-compose up --build
+	docker compose up --build
 
 # Start in detached mode (background)
 start:
-	docker-compose up -d
+	docker compose up -d
 
 # Stop the server
 stop:
-	docker-compose down
+	docker compose down
 
 # Restart the server
 restart:
-	docker-compose restart timber-v3
+	docker compose restart timber-v3
 
 # View logs in real-time
 logs:
-	docker-compose logs -f timber-v3
+	docker compose logs -f timber-v3
 
 # Enter the container shell
 shell:
@@ -31,7 +31,7 @@ error-log:
 
 # Clean up containers and volumes
 clean:
-	docker-compose down -v
+	docker compose down -v
 
 # Open the site in browser (macOS)
 open:
@@ -39,12 +39,12 @@ open:
 
 # Refresh PHP dependencies
 refresh-deps:
-	rm -rf vendor && composer update && composer install && bun install && bun run build && docker-compose restart
+	rm -rf vendor && composer update && composer install && bun install && bun run build && docker compose restart
 
 # Run smoke tests (uses port 8081 to avoid conflicts)
 test:
 	@echo "Starting Docker container on port 8081..."
-	PORT=8081 docker-compose up --build -d
+	PORT=8081 docker compose up --build -d
 	@echo "Waiting for server to be ready..."
 	@timeout=30; while [ $$timeout -gt 0 ]; do \
 		if curl -s http://localhost:8081/ > /dev/null 2>&1; then \
@@ -56,11 +56,11 @@ test:
 	done; \
 	if [ $$timeout -eq 0 ]; then \
 		echo "Timeout waiting for server"; \
-		docker-compose down; \
+		docker compose down; \
 		exit 1; \
 	fi
 	@echo "Running tests..."
-	cd ../../tests && npm test -- e2e/php-portfolio-timber.spec.ts; result=$$?; cd ../examples/php-portfolio-timber && docker-compose down; exit $$result
+	cd ../../tests && npm test -- e2e/php-portfolio-timber.spec.ts; result=$$?; cd ../examples/php-portfolio-timber && docker compose down; exit $$result
 
 # Show this help message
 help:

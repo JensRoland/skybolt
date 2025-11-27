@@ -23,10 +23,10 @@ clean:
 
 # Docker commands
 docker-up:
-	docker-compose up --build -d
+	docker compose up --build -d
 
 docker-down:
-	docker-compose down
+	docker compose down
 
 # Run smoke tests (start server, run tests, stop server)
 test:
