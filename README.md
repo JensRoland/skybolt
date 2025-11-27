@@ -230,13 +230,13 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 
 ## Packages
 
-| Package                                       | Description                        | Install                                   |
-| --------------------------------------------- | ---------------------------------- | ----------------------------------------- |
-| [@skybolt/vite-plugin](packages/vite-plugin/) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
-| [skybolt (PHP)](packages/php/)                | PHP adapter                        | `composer require jensroland/skybolt`     |
-| [skybolt (Python)](packages/python/)          | Python adapter                     | `pip install skybolt`                     |
-| [skybolt (Ruby)](packages/ruby/)              | Ruby adapter                       | `gem install skybolt`                     |
-| [skybolt (Go)](packages/go/)                  | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
+| Package                                                                    | Description                        | Install                                   |
+| -------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| [@skybolt/vite-plugin](https://www.npmjs.com/package/@skybolt/vite-plugin) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
+| [skybolt (PHP)](https://packagist.org/packages/jensroland/skybolt)         | PHP adapter                        | `composer require jensroland/skybolt`     |
+| [skybolt (Python)](https://pypi.org/project/skybolt/)                      | Python adapter                     | `pip install skybolt`                     |
+| [skybolt (Ruby)](https://rubygems.org/gems/skybolt)                        | Ruby adapter                       | `gem install skybolt`                     |
+| [skybolt (Go)](https://pkg.go.dev/github.com/JensRoland/skybolt-go)       | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
 
 ## Examples
 
