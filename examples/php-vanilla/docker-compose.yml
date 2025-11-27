@@ -1,0 +1,17 @@
+services:
+  php-vanilla:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the entire example directory
+      - .:/app
+      # Mount the PHP package for local development
+      - ../../packages/php:/packages/php
+    working_dir: /app
+    healthcheck:
+      test: ["CMD", "php", "-r", "file_get_contents('http://localhost:8080/') or exit(1);"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 5s

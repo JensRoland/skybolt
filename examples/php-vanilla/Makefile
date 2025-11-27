@@ -1,4 +1,4 @@
-.PHONY: install build serve dev clean
+.PHONY: install build serve dev clean docker-up docker-down test
 
 # Install all dependencies
 install:
@@ -20,3 +20,14 @@ dev:
 # Clean build artifacts
 clean:
 	rm -rf dist node_modules vendor
+
+# Docker commands
+docker-up:
+	docker-compose up --build -d
+
+docker-down:
+	docker-compose down
+
+# Run smoke tests (requires Docker)
+test: docker-up
+	cd ../../tests && npm test; result=$$?; cd ../examples/php-vanilla && docker-compose down; exit $$result

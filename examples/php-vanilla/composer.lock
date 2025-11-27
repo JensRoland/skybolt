@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e1c9d7484adf8ad1ec5574edb478def",
+    "content-hash": "642256f35a739923e64ce4899d0c01e9",
     "packages": [
         {
-            "name": "skybolt/skybolt-php",
+            "name": "jensroland/skybolt",
             "version": "3.1.0",
             "dist": {
                 "type": "path",
                 "url": "../../packages/php",
-                "reference": "c944ba963570fde46e7a9443044a960f8f14f4c9"
+                "reference": "dd32b1917fd5920b76241e0c406748f558be0417"
             },
             "require": {
                 "php": ">=8.1"
