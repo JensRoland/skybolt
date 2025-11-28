@@ -11,7 +11,7 @@ This document provides context for AI assistants working on the Skybolt project.
 Skybolt v3 uses a **build-time render map** approach:
 
 1. **Vite Plugin** (`@skybolt/vite-plugin`) generates `render-map.json` at build time
-2. **Server Adapters** (PHP, Ruby, Python, etc.) read the render map and output HTML
+2. **Server Adapters** (Node.js, PHP, Ruby, Python, Go) read the render map and output HTML
 3. **Client Script** caches inlined assets and manages Service Worker
 4. **Service Worker** serves cached assets with ~5ms response time
 
@@ -28,16 +28,30 @@ skybolt/
 │   │   ├── sw.js              # Service Worker source
 │   │   └── package.json
 │   │
-│   └── php/                   # jensroland/skybolt (Composer)
-│       ├── src/Skybolt.php    # ~170 lines
-│       └── composer.json
+│   ├── javascript/            # @skybolt/server-adapter (NPM)
+│   │   ├── src/skybolt.js     # ~475 lines
+│   │   └── package.json
+│   │
+│   ├── php/                   # jensroland/skybolt (Composer)
+│   │   ├── src/Skybolt.php    # ~170 lines
+│   │   └── composer.json
+│   │
+│   ├── python/                # skybolt (PyPI)
+│   ├── ruby/                  # skybolt (RubyGems)
+│   └── go/                    # skybolt-go (Go Modules)
 │
 ├── examples/
+│   ├── node-express/          # Node.js Express example
+│   ├── php-vanilla/           # Minimal PHP example
 │   ├── php-portfolio-timber/  # Full-featured PHP example
-│   └── php-vanilla/           # Minimal PHP example
+│   ├── php-laravel/           # Laravel example
+│   ├── python-django/         # Django example
+│   ├── ruby-rails/            # Rails example
+│   └── go-gin/                # Gin example
 │
 ├── README.md
-└── CLAUDE.md                  # This file
+├── CLAUDE.md                  # This file
+└── DEVELOPING.md              # Maintainer documentation
 ```
 
 ## How It Works
@@ -155,6 +169,21 @@ skybolt({
   swPath: '/skybolt-sw.js',  // URL path for Service Worker
   debug: false               // Enable debug logging
 })
+```
+
+### Node.js Adapter
+
+```javascript
+import { Skybolt } from '@skybolt/server-adapter'
+
+const sb = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
+
+sb.css('src/css/main.css')                   // Render CSS (blocking)
+sb.css('src/css/main.css', { async: true })  // Render CSS (non-blocking)
+sb.script('src/js/app.js')                   // Render JS (ES module)
+sb.script('src/js/old.js', { module: false }) // Render JS (classic)
+sb.launchScript()                            // Render client launcher
+sb.getAssetUrl('src/css/main.css')           // Get URL (manual use)
 ```
 
 ### PHP Adapter

@@ -6,7 +6,7 @@ High-performance asset caching for multi-page applications.
 
 **Version:** 3.3.0 | **Status:** Beta | **License:** MIT
 
-**Works with:** PHP, Python, Ruby, Go (and more to come)
+**Works with:** PHP, Python, Ruby, Go, Node.js/Bun
 
 ![Language logos](./readme-assets/language-dark.webp#gh-dark-mode-only)
 ![Language logos](./readme-assets/language-light.webp#gh-light-mode-only)
@@ -202,6 +202,33 @@ sb.Script("src/js/app.js", true)
 
 </details>
 
+<details>
+<summary><strong>Node.js / Bun</strong></summary>
+
+```bash
+npm install @skybolt/server-adapter
+```
+
+```javascript
+import { Skybolt } from '@skybolt/server-adapter'
+
+const skybolt = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
+```
+
+```javascript
+// In your template
+`<head>
+  ${skybolt.css('src/css/critical.css')}
+  ${skybolt.launchScript()}
+  ${skybolt.css('src/css/main.css', { async: true })}
+</head>
+<body>
+  ${skybolt.script('src/js/app.js')}
+</body>`
+```
+
+</details>
+
 ### 3. Build and Run
 
 ```bash
@@ -222,6 +249,9 @@ rails server
 
 # Go
 go run main.go
+
+# Node.js
+node server.js
 ```
 
 ### 4. Serve the Service Worker
@@ -230,18 +260,20 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 
 ## Packages
 
-| Package                                                                    | Description                        | Install                                   |
-| -------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------- |
-| [@skybolt/vite-plugin](https://www.npmjs.com/package/@skybolt/vite-plugin) | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
-| [skybolt (PHP)](https://packagist.org/packages/jensroland/skybolt)         | PHP adapter                        | `composer require jensroland/skybolt`     |
-| [skybolt (Python)](https://pypi.org/project/skybolt/)                      | Python adapter                     | `pip install skybolt`                     |
-| [skybolt (Ruby)](https://rubygems.org/gems/skybolt)                        | Ruby adapter                       | `gem install skybolt`                     |
-| [skybolt (Go)](https://pkg.go.dev/github.com/JensRoland/skybolt-go)        | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
+| Package                                                                               | Description                        | Install                                   |
+| ------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| [@skybolt/vite-plugin](https://www.npmjs.com/package/@skybolt/vite-plugin)            | Vite plugin (generates render map) | `npm install @skybolt/vite-plugin`        |
+| [@skybolt/server-adapter](https://www.npmjs.com/package/@skybolt/server-adapter) (JS) | Node.js/Bun adapter                | `npm install @skybolt/server-adapter`     |
+| [skybolt (PHP)](https://packagist.org/packages/jensroland/skybolt)                    | PHP adapter                        | `composer require jensroland/skybolt`     |
+| [skybolt (Python)](https://pypi.org/project/skybolt/)                                 | Python adapter                     | `pip install skybolt`                     |
+| [skybolt (Ruby)](https://rubygems.org/gems/skybolt)                                   | Ruby adapter                       | `gem install skybolt`                     |
+| [skybolt-go (Go)](https://pkg.go.dev/github.com/JensRoland/skybolt-go)                | Go adapter                         | `go get github.com/JensRoland/skybolt-go` |
 
 ## Examples
 
 | Example                                                | Language | Framework |
 | ------------------------------------------------------ | -------- | --------- |
+| [node-express](examples/node-express/)                 | Node.js  | Express   |
 | [php-vanilla](examples/php-vanilla/)                   | PHP      | -         |
 | [php-portfolio-timber](examples/php-portfolio-timber/) | PHP      | -         |
 | [php-laravel](examples/php-laravel/)                   | PHP      | Laravel   |
@@ -267,7 +299,7 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 ┌─────────────────────────────────────────────────────────────┐
 │                    RUNTIME (Server)                         │
 ├─────────────────────────────────────────────────────────────┤
-│  Server adapter (Go/PHP/Python/Ruby/etc)                    │
+│  Server adapter (Node.js/PHP/Python/Ruby/Go/etc)            │
 │  • Loads render-map.json                                    │
 │  • Reads sb_assets cookie                                   │
 │  • Returns inline or external tags                          │
@@ -305,27 +337,39 @@ skybolt({
 
 All adapters share the same API pattern:
 
-| Method     | PHP                              | Python                          | Ruby                        | Go                             |
-| ---------- | -------------------------------- | ------------------------------- | --------------------------- | ------------------------------ |
-| Render CSS | `$sb->css($entry, $async)`       | `sb.css(entry, async_load)`     | `sb.css(entry, async:)`     | `sb.CSS(entry, async)`         |
-| Render JS  | `$sb->script($entry)`            | `sb.script(entry)`              | `sb.script(entry)`          | `sb.Script(entry, true)`       |
-| Launcher   | `$sb->launchScript()`            | `sb.launch_script()`            | `sb.launch_script`          | `sb.LaunchScript()`            |
-| Get URL    | `$sb->getAssetUrl($entry)`       | `sb.get_asset_url(entry)`       | `sb.asset_url(entry)`       | `sb.GetAssetURL(entry)`        |
+| Method     | Node.js                  | PHP                         | Python                      | Ruby                     | Go                       |
+| ---------- | ------------------------ | --------------------------- | --------------------------- | ------------------------ | ------------------------ |
+| Render CSS | `sb.css(entry, {async})` | `$sb->css($entry, $async)`  | `sb.css(entry, async_load)` | `sb.css(entry, async:)`  | `sb.CSS(entry, async)`   |
+| Render JS  | `sb.script(entry)`       | `$sb->script($entry)`       | `sb.script(entry)`          | `sb.script(entry)`       | `sb.Script(entry, true)` |
+| Launcher   | `sb.launchScript()`      | `$sb->launchScript()`       | `sb.launch_script()`        | `sb.launch_script`       | `sb.LaunchScript()`      |
+| Preload    | `sb.preload(entry, {})`  | `$sb->preload($entry, ...)` | `sb.preload(entry, ...)`    | `sb.preload(entry, ...)` | `sb.Preload(entry, ...)` |
+| Get URL    | `sb.getAssetUrl(entry)`  | `$sb->getAssetUrl($entry)`  | `sb.get_asset_url(entry)`   | `sb.asset_url(entry)`    | `sb.GetAssetURL(entry)`  |
 
 #### Async CSS Loading
 
 The `async` parameter enables non-render-blocking CSS loading:
 
+```javascript
+// Node.js
+sb.css('src/css/main.css', { async: true })
+```
+
 ```php
 // PHP
 $sb->css('src/css/main.css', async: true);
+```
 
-// Python
+```python
+# Python
 sb.css("src/css/main.css", async_load=True)
+```
 
-// Ruby
+```ruby
+# Ruby
 sb.css("src/css/main.css", async: true)
+```
 
+```go
 // Go
 sb.CSS("src/css/main.css", true)
 ```

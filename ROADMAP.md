@@ -33,15 +33,13 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [X] **Bun/Node.js adapter package** - JavaScript/TypeScript adapter NPM package (`@skybolt/server-adapter`)
 
-- [ ] **ASP.NET Core adapter package** - C# adapter NuGet package (`Skybolt.AspNetCore`)
-
 - [X] **Test Suite** - smoke test all packages and examples! Spin up server, use aheadless browser.
   - Hit without cookie, check console logs, check markup, check cache status
   - Hit with cookie, check console logs, check markup, check cache status again
   - Hit with cookie again, check console logs, check markup, check cache status
   - Check if assets are reachable directly
 
-## Version 4.0+ (Future Vision) 🚀
+## Future Vision 🚀
 
 **Target:** 2026 | **Focus:** Anything not prioritized for 3.x
 
@@ -60,6 +58,24 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [ ] **Stale version purging** - I think we should not cache multiple versions of the same asset. Since we know the asset ‘name’ we should be able to purge existing assets with a different hash when a new one is inlined from the server.
 
+### Concept: Skybolt Chain Lightning ⚡⚡⚡
+
+What if you had a site with a lot of JS components with dependencies on each other -- a big hairy dependency graph like you might get when you compose your app from a lot of NPM packages.
+
+And what if you wanted good caching and fast loading times?
+
+- You would not want to bundle everything into one big file, because that would be slow to load and cache inefficiently. Updates would invalidate the whole bundle every time. This is what many SPA frameworks do today, but this does indeed lead to slow initial load times and poor caching.
+- You also would not want to have each component load separately but bundling its own dependencies, because that would lead to duplication and bloat.
+- And you would not want to dynamically import-fetch all dependencies on demand, because the 'chaining' of dependencies would lead to sequential loading, ultimately resulting in very large delays before a component would be ready.
+
+THE HOLY GRAIL..... is the ability to insert a 'script component' tag which would begin fetching that component and its whole dependency tree immediately and in parallel (or bundled on demand, but that requires server work on every asset request, best to avoid that), so the server only returns non-cached assets, and the client then caches everything efficiently. If two components share a dependency, that dependency is only fetched once.
+
+One of the challenges with something like that is versioning; your search component may depend on your UI library v1.2.1 (fetched from a versioned URL), so what happens when there is a new patch version 1.2.2 of the UI library? You don't want to have to update your search component just to update the `ìmport('ui-library')` statement to point to the new version. You want components to depend on version ranges that are decoupled from the concrete cached dependency URL. Import Maps solve that problem nicely, but you have to build the tooling around that, the dependency resolution, the import map generation, the script tag generation, etc.
+
+But.... it's totally doable.
+
+So that is what our new library 'Chain Lightning' (package names a la `skybolt/chain-lightning`) will do!!!
+
 ---
 
-**Last Updated:** November 27, 2025
+**Last Updated:** November 28, 2025
