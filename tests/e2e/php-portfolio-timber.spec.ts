@@ -142,8 +142,8 @@ test.describe('Skybolt PHP Portfolio Timber Example', () => {
 
     // Check expected console logs for first visit
     expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Found 4 assets to cache'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Ready (4 assets cached)'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Found 5 assets to cache'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Ready (5 new assets cached)'))).toBe(true);
 
     // Check each asset was cached
     for (const asset of EXPECTED_ASSETS) {
@@ -154,11 +154,11 @@ test.describe('Skybolt PHP Portfolio Timber Example', () => {
     const inlinedStyles = await page.locator('style[sb-asset]').count();
     const inlinedScripts = await page.locator('script[sb-asset]').count();
     expect(inlinedStyles).toBe(3); // critical.css + main.css + fonts-inline.css
-    expect(inlinedScripts).toBe(1); // scripts.js (legacy bundle)
+    expect(inlinedScripts).toBe(2); // scripts.js (legacy bundle) + skybolt-launcher
 
     // Check cache status via API
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(4);
+    expect(cacheInfo.count).toBe(5);
     expect(cacheInfo.name).toBe('skybolt-v1');
 
     // Verify sb_assets cookie was set
@@ -176,7 +176,7 @@ test.describe('Skybolt PHP Portfolio Timber Example', () => {
 
     // Verify cache was populated
     const cacheInfoBefore = await getCacheInfo(page);
-    expect(cacheInfoBefore.count).toBe(4);
+    expect(cacheInfoBefore.count).toBe(5);
 
     // Now do a second visit with the cache warm - track failures
     const logs = setupConsoleCollector(page);
@@ -212,9 +212,9 @@ test.describe('Skybolt PHP Portfolio Timber Example', () => {
     const cssLinks = await page.locator('link[rel="stylesheet"]').count();
     expect(cssLinks).toBeGreaterThanOrEqual(3);
 
-    // Cache should still have 4 assets
+    // Cache should still have 5 assets
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(4);
+    expect(cacheInfo.count).toBe(5);
   });
 
   test('3. Third visit (still warm cache) - consistent behavior', async ({ page }) => {
@@ -245,9 +245,9 @@ test.describe('Skybolt PHP Portfolio Timber Example', () => {
     expect(inlinedStyles).toBe(0);
     expect(inlinedScripts).toBe(0);
 
-    // Cache still has 4 assets
+    // Cache still has 5 assets
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(4);
+    expect(cacheInfo.count).toBe(5);
   });
 
   test('Page renders correctly without critical errors', async ({ page }) => {

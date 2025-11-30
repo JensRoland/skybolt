@@ -29,8 +29,10 @@ clean:
 test:
 	@echo "Building assets..."
 	@npm run build
+	@echo "Building Go server..."
+	@go build -o .test-server main.go
 	@echo "Starting Go server on port 8083..."
-	@PORT=8083 go run main.go > /dev/null 2>&1 & echo $$! > .server.pid
-	@sleep 3
+	@PORT=8083 ./.test-server > /dev/null 2>&1 & echo $$! > .server.pid
+	@sleep 2
 	@echo "Running tests..."
-	@cd ../../tests && npm test -- e2e/go-gin.spec.ts; result=$$?; kill `cat ../examples/go-gin/.server.pid` 2>/dev/null; rm -f ../examples/go-gin/.server.pid; exit $$result
+	@cd ../../tests && npm test -- e2e/go-gin.spec.ts; result=$$?; kill `cat ../examples/go-gin/.server.pid` 2>/dev/null; rm -f ../examples/go-gin/.server.pid ../examples/go-gin/.test-server; exit $$result

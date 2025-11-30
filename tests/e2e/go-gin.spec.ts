@@ -129,8 +129,8 @@ test.describe('Skybolt Go Gin Example', () => {
     expect(errors, 'Console error detected').toHaveLength(0);
 
     expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Found 3 assets to cache'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Ready (3 assets cached)'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Found 4 assets to cache'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Ready (4 new assets cached)'))).toBe(true);
 
     for (const asset of EXPECTED_ASSETS) {
       expect(skyboltLogs.some((log) => log.includes(`Cached: ${asset}`))).toBe(true);
@@ -139,10 +139,10 @@ test.describe('Skybolt Go Gin Example', () => {
     const inlinedStyles = await page.locator('style[sb-asset]').count();
     const inlinedScripts = await page.locator('script[sb-asset]').count();
     expect(inlinedStyles).toBe(2);
-    expect(inlinedScripts).toBe(1);
+    expect(inlinedScripts).toBe(2); // app.js + skybolt-launcher
 
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
     expect(cacheInfo.name).toBe('skybolt-v1');
 
     const cookies = await page.context().cookies();
@@ -156,7 +156,7 @@ test.describe('Skybolt Go Gin Example', () => {
     await page.waitForTimeout(500);
 
     const cacheInfoBefore = await getCacheInfo(page);
-    expect(cacheInfoBefore.count).toBe(3);
+    expect(cacheInfoBefore.count).toBe(4);
 
     const logs = setupConsoleCollector(page);
     const failedRequests = setupFailedRequestCollector(page);
@@ -176,7 +176,7 @@ test.describe('Skybolt Go Gin Example', () => {
     expect(inlinedScripts).toBe(0);
 
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
   });
 
   test('3. Third visit (still warm cache) - consistent behavior', async ({ page }) => {
@@ -203,7 +203,7 @@ test.describe('Skybolt Go Gin Example', () => {
     expect(inlinedScripts).toBe(0);
 
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
   });
 
   test('Page renders correctly without critical errors', async ({ page }) => {
@@ -226,7 +226,7 @@ test.describe('Skybolt Go Gin Example', () => {
     await page.waitForTimeout(500);
 
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.urls.length).toBe(3);
+    expect(cacheInfo.urls.length).toBe(4);
     expect(cacheInfo.name).toBe('skybolt-v1');
 
     const paths = cacheInfo.urls.map((u: string) => new URL(u).pathname);

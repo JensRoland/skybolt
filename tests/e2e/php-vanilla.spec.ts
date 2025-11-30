@@ -142,8 +142,8 @@ test.describe('Skybolt PHP Vanilla Example', () => {
 
     // Check expected console logs for first visit
     expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Found 3 assets to cache'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Ready (3 assets cached)'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Found 4 assets to cache'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Ready (4 new assets cached)'))).toBe(true);
 
     // Check each asset was cached
     for (const asset of EXPECTED_ASSETS) {
@@ -154,7 +154,7 @@ test.describe('Skybolt PHP Vanilla Example', () => {
     const inlinedStyles = await page.locator('style[sb-asset]').count();
     const inlinedScripts = await page.locator('script[sb-asset]').count();
     expect(inlinedStyles).toBe(2); // critical.css + main.css
-    expect(inlinedScripts).toBe(1); // app.js
+    expect(inlinedScripts).toBe(2); // app.js + skybolt-launcher
 
     // Verify sb-asset attribute format (name:hash)
     const firstStyle = await page.locator('style[sb-asset]').first();
@@ -167,7 +167,7 @@ test.describe('Skybolt PHP Vanilla Example', () => {
 
     // Check cache status via API
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
     expect(cacheInfo.name).toBe('skybolt-v1');
 
     // Verify sb_assets cookie was set
@@ -187,7 +187,7 @@ test.describe('Skybolt PHP Vanilla Example', () => {
 
     // Verify cache was populated
     const cacheInfoBefore = await getCacheInfo(page);
-    expect(cacheInfoBefore.count).toBe(3);
+    expect(cacheInfoBefore.count).toBe(4);
 
     // Now do a second visit with the cache warm - track failures
     const logs = setupConsoleCollector(page);
@@ -234,9 +234,9 @@ test.describe('Skybolt PHP Vanilla Example', () => {
     const externalScripts = await page.locator('script[src]').count();
     expect(externalScripts).toBeGreaterThanOrEqual(1);
 
-    // Cache should still have 3 assets
+    // Cache should still have 4 assets
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
 
     // Note: Service Worker console logs don't appear in the page's console collector
     // We verify cache behavior through the above checks (no inlined assets, external tags present)
@@ -280,9 +280,9 @@ test.describe('Skybolt PHP Vanilla Example', () => {
     expect(inlinedStyles).toBe(0);
     expect(inlinedScripts).toBe(0);
 
-    // Cache still has 3 assets
+    // Cache still has 4 assets
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
 
     // Note: Service Worker console logs don't appear in page's console collector
     // We verify warm cache behavior through the markup checks above
@@ -298,7 +298,7 @@ test.describe('Skybolt PHP Vanilla Example', () => {
     await page.waitForFunction(
       async () => {
         const info = await (window as any).skybolt?.getCacheInfo();
-        return info?.count === 3;
+        return info?.count === 4;
       },
       { timeout: 3000 }
     );
@@ -310,7 +310,7 @@ test.describe('Skybolt PHP Vanilla Example', () => {
     // Check cache status element shows cached state
     const cacheStatus = page.locator('#cache-status');
     await expect(cacheStatus).toContainText('Cache Status: Active');
-    await expect(cacheStatus).toContainText('Cached Assets: 3');
+    await expect(cacheStatus).toContainText('Cached Assets: 4');
 
     // Refresh button should still work
     await refreshButton.click();
@@ -328,7 +328,7 @@ test.describe('Skybolt PHP Vanilla Example', () => {
 
     // Verify cache is populated
     let cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
 
     // Click clear cache button
     const clearButton = page.locator('#clear-cache');

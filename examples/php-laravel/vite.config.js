@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { skybolt } from '@skybolt/vite-plugin'
 
 export default defineConfig({
-    base: '/',
+    base: '/build/',
     build: {
         manifest: true,
         outDir: 'public/build',
@@ -16,7 +16,8 @@ export default defineConfig({
     },
     plugins: [
         skybolt({
-            debug: true
+            debug: true,
+            swPath: '/build/skybolt-sw.js'
         })
     ]
 })

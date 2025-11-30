@@ -17,6 +17,7 @@ export default defineConfig({
     plugins: [
         skybolt({
             debug: true
+            // Keep SW at default /skybolt-sw.js - Rails controller sets Service-Worker-Allowed header
         })
     ]
 })

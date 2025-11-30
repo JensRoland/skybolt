@@ -140,8 +140,8 @@ test.describe('Skybolt PHP Laravel Example', () => {
 
     // Check expected console logs for first visit
     expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Found 3 assets to cache'))).toBe(true);
-    expect(skyboltLogs.some((log) => log.includes('Ready (3 assets cached)'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Found 4 assets to cache'))).toBe(true);
+    expect(skyboltLogs.some((log) => log.includes('Ready (4 new assets cached)'))).toBe(true);
 
     // Check each asset was cached
     for (const asset of EXPECTED_ASSETS) {
@@ -152,11 +152,11 @@ test.describe('Skybolt PHP Laravel Example', () => {
     const inlinedStyles = await page.locator('style[sb-asset]').count();
     const inlinedScripts = await page.locator('script[sb-asset]').count();
     expect(inlinedStyles).toBe(2); // critical.css + app.css
-    expect(inlinedScripts).toBe(1); // app.js
+    expect(inlinedScripts).toBe(2); // app.js + skybolt-launcher
 
     // Check cache status via API
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
     expect(cacheInfo.name).toBe('skybolt-v1');
 
     // Verify sb_assets cookie was set
@@ -174,7 +174,7 @@ test.describe('Skybolt PHP Laravel Example', () => {
 
     // Verify cache was populated
     const cacheInfoBefore = await getCacheInfo(page);
-    expect(cacheInfoBefore.count).toBe(3);
+    expect(cacheInfoBefore.count).toBe(4);
 
     // Now do a second visit with the cache warm - track failures
     const logs = setupConsoleCollector(page);
@@ -210,9 +210,9 @@ test.describe('Skybolt PHP Laravel Example', () => {
     const cssLinks = await page.locator('link[rel="stylesheet"]').count();
     expect(cssLinks).toBeGreaterThanOrEqual(2);
 
-    // Cache should still have 3 assets
+    // Cache should still have 4 assets
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
   });
 
   test('3. Third visit (still warm cache) - consistent behavior', async ({ page }) => {
@@ -243,9 +243,9 @@ test.describe('Skybolt PHP Laravel Example', () => {
     expect(inlinedStyles).toBe(0);
     expect(inlinedScripts).toBe(0);
 
-    // Cache still has 3 assets
+    // Cache still has 4 assets
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.count).toBe(3);
+    expect(cacheInfo.count).toBe(4);
   });
 
   test('Page renders correctly without critical errors', async ({ page }) => {
@@ -271,7 +271,7 @@ test.describe('Skybolt PHP Laravel Example', () => {
 
     // Get cache info to verify assets were cached
     const cacheInfo = await getCacheInfo(page);
-    expect(cacheInfo.urls.length).toBe(3);
+    expect(cacheInfo.urls.length).toBe(4);
     expect(cacheInfo.name).toBe('skybolt-v1');
 
     // Verify URLs contain expected asset paths

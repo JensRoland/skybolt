@@ -8,8 +8,8 @@
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-// Serve Service Worker from build directory
-if ($uri === '/skybolt-sw.js') {
+// Serve Service Worker from build directory (handles both /skybolt-sw.js and /build/skybolt-sw.js)
+if ($uri === '/skybolt-sw.js' || $uri === '/build/skybolt-sw.js') {
     $swPath = __DIR__ . '/build/skybolt-sw.js';
     if (file_exists($swPath)) {
         header('Content-Type: application/javascript');
