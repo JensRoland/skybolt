@@ -1,7 +1,4 @@
-/*!
- * Skybolt Client
- * @version 3.3.0
- */
+/*! Skybolt - @version 3.3.0 */
 /**
  * Registers Service Worker and coordinates cache state via cookies.
  * Extracts inlined assets and stores them in Cache API.
@@ -56,15 +53,22 @@ class SkyboltClient {
       return
     }
 
-    // Process any inlined assets on the page
-    this.processInlinedAssets()
-
-    // Update cookie when DOM is ready
+    // Process any inlined assets on the page, then finalize
+    // We need to wait for DOM to be ready so we can find all sb-asset elements
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.finalize())
+      document.addEventListener('DOMContentLoaded', () => this.processAndFinalize())
     } else {
-      this.finalize()
+      this.processAndFinalize()
     }
+  }
+
+  /**
+   * Process inlined assets and update cookie
+   * Must wait for cache operations to complete before updating cookie
+   */
+  async processAndFinalize() {
+    await this.processInlinedAssets()
+    await this.finalize()
   }
 
   /**
@@ -85,10 +89,13 @@ class SkyboltClient {
 
   /**
    * Process all inlined assets and cache them
+   * @returns {Promise<void>}
    */
-  processInlinedAssets() {
+  async processInlinedAssets() {
     const elements = document.querySelectorAll('[sb-asset]')
     console.log(`[Skybolt] Found ${elements.length} assets to cache`)
+
+    const cachePromises = []
 
     elements.forEach(el => {
       const cacheInfo = el.getAttribute('sb-asset')
@@ -112,13 +119,50 @@ class SkyboltClient {
       // Track version for cookie
       this.versions[name] = hash
 
-      // Get content and content type
+      // Handle importmap elements specially - extract data URL content
+      if (el.type === 'importmap') {
+        cachePromises.push(this.processImportMapAsset(el, url, name, hash))
+        return
+      }
+
+      // Get content and content type for regular elements
       const content = el.textContent || ''
       const contentType = el.tagName === 'STYLE' ? 'text/css' : 'application/javascript'
 
       // Cache the asset
-      this.cacheAsset(url, content, contentType, name, hash)
+      cachePromises.push(this.cacheAsset(url, content, contentType, name, hash))
     })
+
+    // Wait for all cache operations to complete
+    await Promise.all(cachePromises)
+  }
+
+  /**
+   * Process an importmap element with sb-asset attributes
+   * Extracts the data URL content and caches the decoded JavaScript
+   * @param {HTMLScriptElement} el - The importmap script element
+   * @param {string} url - Cache URL
+   * @param {string} name - Asset name
+   * @param {string} hash - Content hash
+   * @returns {Promise<void>}
+   */
+  async processImportMapAsset(el, url, name, hash) {
+    try {
+      const importMap = JSON.parse(el.textContent || '{}')
+      // Skybolt importmaps contain exactly one entry
+      const dataUrl = Object.values(importMap.imports || {})[0]
+
+      if (!dataUrl?.startsWith('data:application/javascript;base64,')) {
+        console.warn('[Skybolt] Invalid importmap data URL:', name)
+        return
+      }
+
+      // Decode the base64 content and cache
+      const base64 = dataUrl.slice('data:application/javascript;base64,'.length)
+      await this.cacheAsset(url, atob(base64), 'application/javascript', name, hash)
+    } catch (err) {
+      console.error('[Skybolt] Failed to process importmap:', name, err)
+    }
   }
 
   /**
@@ -156,11 +200,11 @@ class SkyboltClient {
   /**
    * Finalize initialization - update cookie with cached versions
    */
-  finalize() {
+  async finalize() {
     const count = Object.keys(this.versions).length
     if (count > 0) {
-      this.updateCookie()
-      console.log(`[Skybolt] Ready (${count} assets cached)`)
+      await this.updateCookieFromCache()
+      console.log(`[Skybolt] Ready (${count} new assets cached)`)
     } else {
       // No new assets to cache - validate existing cache integrity
       this.validateCache()
@@ -168,21 +212,42 @@ class SkyboltClient {
   }
 
   /**
-   * Update the sb_assets cookie with current versions
+   * Update the sb_assets cookie based on actual Cache API contents
+   * This ensures the cookie always reflects reality
    */
-  updateCookie() {
-    const data = Object.entries(this.versions)
-      .map(([name, hash]) => `${name}:${hash}`)
-      .join(',')
+  async updateCookieFromCache() {
+    try {
+      const cache = await caches.open(CACHE_NAME)
+      const keys = await cache.keys()
+      const versions = {}
 
-    // Encode to handle special characters in paths
-    const encoded = encodeURIComponent(data)
+      // Read metadata from each cached response
+      for (const request of keys) {
+        const response = await cache.match(request)
+        if (response) {
+          const name = response.headers.get('X-Skybolt-Name')
+          const hash = response.headers.get('X-Skybolt-Hash')
+          if (name && hash) {
+            versions[name] = hash
+          }
+        }
+      }
 
-    // Check if we need cookie sharding (>4KB)
-    if (encoded.length > 4090) {
-      this.updateCookieSharded(encoded)
-    } else {
-      document.cookie = `${COOKIE_NAME}=${encoded}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
+      // Write cookie from cache contents
+      const data = Object.entries(versions)
+        .map(([name, hash]) => `${name}:${hash}`)
+        .join(',')
+
+      if (data) {
+        const encoded = encodeURIComponent(data)
+        if (encoded.length > 4090) {
+          this.updateCookieSharded(encoded)
+        } else {
+          document.cookie = `${COOKIE_NAME}=${encoded}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
+        }
+      }
+    } catch (err) {
+      console.error('[Skybolt] Failed to update cookie from cache:', err)
     }
   }
 
@@ -266,28 +331,11 @@ class SkyboltClient {
 
   /**
    * Handle case where Service Worker is unavailable
-   * Convert inlined assets back to external links
+   * Clear cookies so next visit will inline assets again
    */
   handleNoServiceWorker() {
-    console.warn('[Skybolt] Falling back to external assets')
-
-    document.querySelectorAll('[sb-asset]').forEach(el => {
-      const url = el.getAttribute('sb-url')
-      if (!url) return
-
-      if (el.tagName === 'STYLE') {
-        const link = document.createElement('link')
-        link.rel = 'stylesheet'
-        link.href = url
-        el.replaceWith(link)
-      } else if (el.tagName === 'SCRIPT') {
-        const script = document.createElement('script')
-        script.src = url
-        if (el.type === 'module') script.type = 'module'
-        if (el.hasAttribute('async')) script.async = true
-        el.replaceWith(script)
-      }
-    })
+    console.warn('[Skybolt] Service Worker unavailable, clearing cookies')
+    this.clearCookies()
   }
 
   /**
@@ -360,6 +408,22 @@ class SkyboltClient {
     } catch (err) {
       return { name: CACHE_NAME, count: 0, urls: [], error: err.message }
     }
+  }
+
+  /**
+   * Check if a URL is cached (public API for integrations like Chain Lightning)
+   * Uses the versions tracked during this page load
+   * @param {string} url - URL to check (can be relative or absolute)
+   * @returns {boolean} True if URL hash matches a cached asset
+   */
+  isCachedUrl(url) {
+    // Check if URL contains any hash we've cached this session
+    for (const hash of Object.values(this.versions)) {
+      if (url.includes(hash)) {
+        return true
+      }
+    }
+    return false
   }
 }
 

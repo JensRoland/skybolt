@@ -1,0 +1,41 @@
+{
+  "name": "@skybolt/chain-lightning",
+  "version": "0.1.0",
+  "description": "Parallel dependency loading for ES modules with intelligent caching",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./vite": "./src/vite-plugin.js",
+    "./server": "./src/server.js",
+    "./client": "./src/client.js"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "pnpm run minify",
+    "minify": "esbuild src/client.js --minify --outfile=src/client.min.js"
+  },
+  "keywords": [
+    "vite",
+    "esm",
+    "modules",
+    "preload",
+    "cache",
+    "performance"
+  ],
+  "author": "Jens Roland",
+  "license": "MIT",
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jensroland/skybolt.git",
+    "directory": "packages/chain-lightning"
+  }
+}
