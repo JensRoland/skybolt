@@ -1,7 +1,4 @@
-/*!
- * Skybolt Service Worker
- * @version 3.3.0
- */
+/*! Skybolt Service Worker - @version 3.3.0 */
 /**
  * Cache-first Service Worker for Skybolt assets.
  * Intercepts requests for JS/CSS and serves from Cache API.
@@ -137,7 +134,7 @@ function isDevMode() {
   }
 
   // Vite dev server ports
-  const devPorts = ['5173', '5174', '3000', '3001']
+  const devPorts = ['5173', '5174', '3001']
   if (self.location.hostname === 'localhost' && devPorts.includes(self.location.port)) {
     return true
   }

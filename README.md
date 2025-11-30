@@ -281,6 +281,65 @@ Configure your web server to serve `/skybolt-sw.js` from `dist/skybolt-sw.js`.
 | [ruby-rails](examples/ruby-rails/)                     | Ruby     | Rails     |
 | [go-gin](examples/go-gin/)                             | Go       | Gin       |
 
+## Chain Lightning
+
+Chain Lightning is a companion library that solves the ES module "waterfall" problem - where the browser must fetch, parse, and discover imports sequentially before fetching dependencies.
+
+```text
+Without Chain Lightning:
+component.js ─────────►
+                       dependency-a.js ─────────►
+                                                 shared-util.js ─────────►
+
+With Chain Lightning:
+component.js ─────────►
+dependency-a.js ─────────►
+shared-util.js ─────────►
+```
+
+This challenge is usually addressed with bundling, but bundling has its own performance drawbacks (cache invalidation, large payloads, etc), especially as applications grow in size and complexity.
+
+In contrast, Chain Lightning analyzes your dependency graph at build time and generates import maps + modulepreload hints so the browser fetches all dependencies in parallel.
+
+### Quick Example
+
+```javascript
+// vite.config.js
+import { skybolt } from '@skybolt/vite-plugin'
+import { chainLightning } from '@skybolt/chain-lightning/vite'
+
+export default defineConfig({
+  plugins: [
+    skybolt(),
+    chainLightning({
+      components: ['search-component', 'counter-component']
+    })
+  ]
+})
+```
+
+```javascript
+// server.js
+const sb = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
+const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', sb)
+
+res.send(`
+  <head>
+    ${sb.css('src/css/main.css')}
+    ${sb.launchScript()}
+    ${cl.headScripts()}
+  </head>
+  <body>
+    ${cl.component('search-component')}
+    <search-component></search-component>
+  </body>
+`)
+```
+
+When integrated with Skybolt, chunk dependencies are cached via Service Worker for ~5ms response times on repeat visits.
+
+See the [Chain Lightning README](packages/chain-lightning/README.md) for full documentation.
+
 ## Architecture
 
 ```text
@@ -424,6 +483,6 @@ MIT
 
 **Original Concept:** Jens Roland & Morten Olsen (2012-2013)
 
-Inspired by performance research from Paul Irish (GMail mobile IIRC), Steve Souders, Addy Osmani, and others.
+Inspired by performance research from Paul Irish (GMail mobile IIRC), Steve Souders, Addy Osmani, Stoyan Stefanov, and others.
 
 The same approach was described in a [Filament Group 2017 blog post](https://www.filamentgroup.com/lab/inlining-cache.html) by Scott Jehl

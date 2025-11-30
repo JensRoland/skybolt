@@ -1,0 +1,23 @@
+{
+  "name": "chain-lightning-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "node server.js"
+  },
+  "dependencies": {
+    "@skybolt/chain-lightning": "file:../../packages/chain-lightning",
+    "@skybolt/server-adapter": "file:../../packages/javascript",
+    "express": "^4.18.2",
+    "cookie-parser": "^1.4.6",
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "@skybolt/vite-plugin": "file:../../packages/vite-plugin",
+    "vite": "^6.0.0"
+  },
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+}

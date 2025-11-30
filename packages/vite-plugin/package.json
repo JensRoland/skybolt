@@ -19,6 +19,7 @@
     "README.md"
   ],
   "scripts": {
+    "build": "pnpm run minify",
     "minify": "esbuild client.js --minify --outfile=client.min.js && esbuild sw.js --minify --outfile=sw.min.js",
     "version": "node scripts/sync-version.js && git add -A",
     "postversion": "git commit -m \"chore(vite-plugin): release v$npm_package_version\" && git tag vite-plugin-v$npm_package_version && git push origin main --tags"

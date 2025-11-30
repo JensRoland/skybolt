@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs'
 import { resolve, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createHash } from 'node:crypto'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SKYBOLT_VERSION = '3.3.0'
@@ -30,13 +31,20 @@ const SKYBOLT_VERSION = '3.3.0'
  */
 
 /**
+ * @typedef {Object} LauncherEntry
+ * @property {string} url - Full URL path to the launcher script
+ * @property {string} hash - Content hash for cache invalidation
+ * @property {string} content - Full minified content
+ */
+
+/**
  * @typedef {Object} RenderMap
  * @property {number} version - Render map schema version
  * @property {string} generated - ISO timestamp of generation
  * @property {string} skyboltVersion - Skybolt version
  * @property {string} basePath - Base path for assets
  * @property {Object<string, AssetEntry>} assets - Map of source paths to asset entries
- * @property {{script: string}} client - Client script content
+ * @property {LauncherEntry} launcher - Launcher script entry (cached like assets)
  * @property {{filename: string, path: string}} serviceWorker - Service Worker info
  */
 
@@ -173,7 +181,7 @@ export function skybolt(options = {}) {
         }
       }
 
-      // Read client script
+      // Read client script and generate launcher entry
       const clientPath = resolve(__dirname, 'client.min.js')
       let clientScript
 
@@ -184,6 +192,14 @@ export function skybolt(options = {}) {
         return
       }
 
+      // Generate hash for launcher (8 chars like Vite assets)
+      const launcherHash = createHash('sha256')
+        .update(clientScript)
+        .digest('base64url')
+        .slice(0, 8)
+      const launcherFilename = `skybolt-launcher-${launcherHash}.js`
+      const launcherUrl = normalizeUrl(config.base, `assets/${launcherFilename}`)
+
       // Build render map
       /** @type {RenderMap} */
       const renderMap = {
@@ -192,8 +208,10 @@ export function skybolt(options = {}) {
         skyboltVersion: SKYBOLT_VERSION,
         basePath: config.base,
         assets,
-        client: {
-          script: clientScript
+        launcher: {
+          url: launcherUrl,
+          hash: launcherHash,
+          content: clientScript
         },
         serviceWorker: {
           filename: 'skybolt-sw.js',
@@ -220,6 +238,13 @@ export function skybolt(options = {}) {
       } else {
         console.error('[skybolt] Error: sw.min.js not found in plugin directory')
       }
+
+      // Copy launcher script to assets directory (for external loading on repeat visits)
+      const assetsDir = resolve(buildOutDir, 'assets')
+      mkdirSync(assetsDir, { recursive: true })
+      const launcherDestPath = resolve(assetsDir, launcherFilename)
+      writeFileSync(launcherDestPath, clientScript)
+      console.log(`[skybolt] Generated ${launcherFilename} (${Buffer.byteLength(clientScript)} bytes)`)
     }
   }
 }
