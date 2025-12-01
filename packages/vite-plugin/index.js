@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SKYBOLT_VERSION = '3.5.0'
+const SKYBOLT_VERSION = '3.5.1'
 
 /**
  * @typedef {Object} SkyboltPluginOptions

@@ -1,4 +1,4 @@
-/*! Skybolt - @version 3.5.0 */
+/*! Skybolt - @version 3.5.1 */
 /**
  * Registers Service Worker and coordinates cache state via cookies.
  * Extracts inlined assets and stores them in Cache API.
