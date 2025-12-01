@@ -21,7 +21,7 @@ jobs:
         env:
           SSH_DEPLOY_KEY: ${{ secrets.CL_PHP_PACKAGE_DEPLOY_KEY }}
         with:
-          source-directory: 'packages/php'
+          source-directory: 'packages/chain-lightning-php'
           user-email: 'mail@jensroland.com'
           destination-github-username: 'JensRoland'
           destination-repository-name: 'chain-lightning-php'

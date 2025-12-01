@@ -1,6 +1,6 @@
 # Chain Lightning PHP
 
-PHP server adapter for Chain Lightning - parallel dependency loading for ES modules.
+PHP server adapter for [Chain Lightning](https://github.com/jensroland/skybolt/tree/main/packages/chain-lightning) - cache-efficient parallel dependency loading for ES modules.
 
 ## Installation
 
