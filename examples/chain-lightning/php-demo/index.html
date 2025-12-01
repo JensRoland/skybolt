@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chain Lightning PHP Demo (Dev Mode)</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fafafa;
+    }
+    h1 { color: #333; }
+    .demo-section {
+      margin: 2rem 0;
+    }
+    .demo-section h2 {
+      color: #666;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .info-box {
+      background: #dbeafe;
+      border: 1px solid #3b82f6;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>&#9889; Chain Lightning PHP Demo (Dev Mode)</h1>
+
+  <div class="info-box">
+    <strong>Dev Mode:</strong> This page loads components directly via Vite.
+    For the full Chain Lightning experience with preloading, run:
+    <code>npm run build && make serve</code>
+  </div>
+
+  <div class="demo-section">
+    <h2>Search Component</h2>
+    <search-component></search-component>
+  </div>
+
+  <div class="demo-section">
+    <h2>Counter Component</h2>
+    <counter-component></counter-component>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/components/search-component.js"></script>
+  <script type="module" src="/src/components/counter-component.js"></script>
+</body>
+</html>

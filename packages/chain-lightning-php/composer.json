@@ -3,7 +3,6 @@
     "description": "Parallel dependency loading for ES modules with intelligent caching",
     "type": "library",
     "license": "MIT",
-    "version": "0.1.0",
     "authors": [
         {
             "name": "Jens Roland",

@@ -123,7 +123,7 @@ ssh-keygen -t ed25519 -C "skybolt-[language]-deploy" -f skybolt-[language]-deplo
 
 **In the monorepo** (`skybolt`):
 
-1. Go to Settings → Secrets and variables → Actions, then click "New repository secret"
+1. Go to <https://github.com/JensRoland/skybolt/settings/secrets/actions/new> to create a new repository secret
    1. Name: `[LANGUAGE]_PACKAGE_DEPLOY_KEY`
    2. Paste **private key**
 2. Click "Add secret"

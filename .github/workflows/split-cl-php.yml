@@ -1,0 +1,30 @@
+name: Split PHP Package
+run-name: Push to Chain Lightning PHP repo for "${{ github.event.head_commit.message }}"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/chain-lightning-php/**'
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Split and push to chain-lightning-php repo
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.CL_PHP_PACKAGE_DEPLOY_KEY }}
+        with:
+          source-directory: 'packages/php'
+          user-email: 'mail@jensroland.com'
+          destination-github-username: 'JensRoland'
+          destination-repository-name: 'chain-lightning-php'
+          target-branch: main
+          create-target-branch-if-needed: true
+          commit-message: 'Sync from monorepo: ${{ github.sha }}'

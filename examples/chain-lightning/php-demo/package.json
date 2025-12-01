@@ -1,0 +1,19 @@
+{
+  "name": "chain-lightning-php-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "php -S localhost:8080 -t public public/router.php"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "@skybolt/vite-plugin": "file:../../../packages/vite-plugin",
+    "@skybolt/chain-lightning": "file:../../../packages/chain-lightning",
+    "vite": "^6.0.0"
+  }
+}
