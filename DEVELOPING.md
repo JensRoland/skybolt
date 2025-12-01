@@ -8,20 +8,21 @@ All language adapter packages use the same release flow:
 
 1. Run `./scripts/release.sh [patch|minor|major]` from the package directory
 2. Script bumps version in VERSION file and language-specific files
-3. Script commits and pushes to 'skybolt' monorepo
-4. Split workflow syncs to the split repo (language-specific)
-5. Split repo's `tag-and-publish.yml` creates tag and publishes
+3. Script commits changes
+4. Run `git push origin main` to push changes to 'skybolt' monorepo
+5. Split workflow syncs to the split repo (language-specific)
+6. Split repo's `tag-and-publish.yml` creates tag and publishes
 
-Simply run:
+That is, simply run:
 
 ```sh
 cd packages/[php|python|ruby|go|javascript]
 ./scripts/release.sh patch   # 3.1.0 → 3.1.1
 ./scripts/release.sh minor   # 3.1.0 → 3.2.0
 ./scripts/release.sh major   # 3.1.0 → 4.0.0
-```
 
-Use `--no-push` to stage changes without pushing (for review).
+git push origin main
+```
 
 ## Skybolt Vite Plugin (@skybolt/vite-plugin)
 
@@ -30,6 +31,9 @@ The `vite-plugin` package uses npm's built-in versioning:
 ```sh
 cd packages/vite-plugin
 npm version patch  # or minor/major
+
+# Then, when ready to publish:
+git push origin main --tags
 ```
 
 This runs `scripts/sync-version.js` to update version references, commits, tags, and pushes.
@@ -41,6 +45,9 @@ The `chain-lightning` package uses npm's built-in versioning:
 ```sh
 cd packages/chain-lightning
 npm version patch  # or minor/major
+
+# Then, when ready to publish:
+git push origin main --tags
 ```
 
 This runs `scripts/sync-version.js` to update version references, commits, tags, and pushes.

@@ -49,6 +49,8 @@ This document outlines the planned features and improvements for Skybolt.
 
 - [ ] **Cache Digest** - Replace manifest-based asset discovery with cache digests for smaller cookies (Cuckoo filter?). See <https://calendar.perfplanet.com/2016/cache-digests-http2-server-push/>
 
+- [ ] **Experiment: A fully server side Chain Lightning** - A single PHP/Go/Ruby/Python script that serves static script assets and includes prebaked headers from a sidecar file, so /assets/main-abc678.js would have a sidecar /assets/main-abc678.js.headers with the necessary `103 Early Hints` headers to preload dependencies. This would not be compatible with Skybolt inlining, but it would
+
 - [ ] **HTML Fragment Caching** - Support caching of HTML fragments (e.g., partials, components) alongside CSS/JS assets. The challenge is we've designed Skybolt around a build-time asset definition model, so you'd need to define your assets upfront - in the Vite config. And even if we limit it to known reusable components, different stacks have very different methods for rendering those, so it would make it tricky to implement in a generic way.
 
 - [ ] **Laravel Integration** - Framework integration with Laravel (Blade directives), include in skybolt-php package

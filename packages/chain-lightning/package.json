@@ -16,8 +16,8 @@
   "scripts": {
     "build": "pnpm run minify",
     "minify": "esbuild src/client.js --minify --outfile=src/client.min.js",
-    "version": "node scripts/sync-version.js && git add -A",
-    "postversion": "git commit -m \"chore(chain-lightning): release v$npm_package_version\" && git tag chain-lightning-v$npm_package_version && git push origin main --tags"
+    "version": "node scripts/sync-version.js && git add .",
+    "postversion": "git commit -m \"chore(chain-lightning): release v$npm_package_version\" && git tag chain-lightning-v$npm_package_version && echo \"\\nRun 'git push origin main --tags' to publish\""
   },
   "keywords": [
     "vite",

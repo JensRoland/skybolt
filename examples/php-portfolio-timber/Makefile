@@ -1,6 +1,18 @@
 # Timber v2 example - Makefile
 # Quick commands for common development tasks
 
+# Install PHP and JS dependencies
+install:
+	composer install && bun install
+
+# Build frontend assets
+build:
+	bun run build
+
+# Refresh PHP dependencies
+refresh-deps:
+	rm -rf vendor && composer update && composer install && bun install && bun run build && docker compose restart
+
 # Start the development server
 serve:
 	docker compose up --build
@@ -37,14 +49,6 @@ clean:
 open:
 	open http://localhost:8080/
 
-# Build frontend assets
-build-assets:
-	bun install && bun run build
-
-# Refresh PHP dependencies
-refresh-deps:
-	rm -rf vendor && composer update && composer install && bun install && bun run build && docker compose restart
-
 # Run smoke tests (uses port 8081 to avoid conflicts)
 test:
 	@echo "Starting Docker container on port 8081..."
@@ -70,6 +74,9 @@ test:
 help:
 	@echo "Available Make Targets:"
 	@echo ""
+	@echo "  make install      - Install PHP and JS dependencies"
+	@echo "  make build        - Build frontend assets"
+	@echo "  make refresh-deps - Refresh PHP dependencies"
 	@echo "  make serve        - Start development server (foreground)"
 	@echo "  make start        - Start development server (background)"
 	@echo "  make stop         - Stop the server"
@@ -79,7 +86,6 @@ help:
 	@echo "  make error-log    - View Apache error log"
 	@echo "  make clean        - Clean up containers and volumes"
 	@echo "  make open         - Open site in browser (macOS)"
-	@echo "  make refresh-deps - Refresh PHP dependencies"
 	@echo "  make help         - Show this help message"
 	@echo ""
 	@echo "Site URL: http://localhost:8080/"

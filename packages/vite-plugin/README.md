@@ -216,8 +216,9 @@ This automatically:
 3. Regenerates minified files
 4. Commits all changes
 5. Creates a git tag (e.g., `v3.1.2`)
-6. Triggers the `postversion` script, which creates the `vite-plugin-v*` tag and pushes to GitHub
-7. ....which triggers the publish workflow.
+6. Triggers the `postversion` script, which creates the `vite-plugin-v*` tag
+
+You then have to run `git push origin main --tags` to push the changes and tag to GitHub, which triggers the publish workflow.
 
 The workflow uses `vite-plugin-v*` tags (not just `v*`) to differentiate from the adapter package tags. It also includes `--provenance` for supply chain security.
 

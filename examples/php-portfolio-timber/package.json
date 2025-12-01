@@ -6,7 +6,7 @@
   "description": "Timber template with Skybolt v3",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/concat-js.js && cp -r dist/assets public/ && cp dist/skybolt-sw.js public/",
+    "build": "vite build && node scripts/concat-js.js && rm -rf public/assets && cp -r dist/assets public/ && cp dist/skybolt-sw.js public/",
     "preview": "vite preview"
   },
   "devDependencies": {

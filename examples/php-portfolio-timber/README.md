@@ -8,11 +8,10 @@ The template used for this demo is available from <https://gt3themes.com/bootstr
 
 ```bash
 # Install dependencies
-composer install
-bun install
+make install
 
 # Build assets
-bun run build
+make build
 
 # Run server
 make serve
