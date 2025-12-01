@@ -2,9 +2,9 @@
 
 This document outlines the planned features and improvements for Skybolt.
 
-## Version 3.1 (Current) ✅
+## Version 3.x (Current) ✅
 
-**Status:** Beta | **Released:** November 2025
+**Status:** Beta | **Released:** December 2025
 
 ### Completed Features
 
@@ -16,7 +16,7 @@ This document outlines the planned features and improvements for Skybolt.
 - ✅ Service Worker caching with Cache API
 - ✅ Cookie-based version tracking
 
-### Planned Tasks for 3.x
+### Planned Tasks
 
 - [X] **Language specific repos** - Add 'splitter' Github Actions for each supported language - all the languages get a repo!
 
@@ -45,9 +45,9 @@ This document outlines the planned features and improvements for Skybolt.
 
 ## Future Vision 🚀
 
-**Target:** 2026 | **Focus:** Anything not prioritized for 3.x
+**Target:** 2026 | **Focus:** Anything a little further out
 
-- [ ] **Cache Digest** - Replace manifest-based asset discovery with cache digests for smaller cookies (Cuckoo filter?). See <https://calendar.perfplanet.com/2016/cache-digests-http2-server-push/>
+- [X] **Cache Digest** - Replace manifest-based asset discovery with cache digests for smaller cookies (Cuckoo filter?). See <https://calendar.perfplanet.com/2016/cache-digests-http2-server-push/>
 
 - [ ] **Experiment: A fully server side Chain Lightning** - A single PHP/Go/Ruby/Python script that serves static script assets and includes prebaked headers from a sidecar file, so /assets/main-abc678.js would have a sidecar /assets/main-abc678.js.headers with the necessary `103 Early Hints` headers to preload dependencies. This would not be compatible with Skybolt inlining, but it would
 

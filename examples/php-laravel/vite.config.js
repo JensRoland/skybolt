@@ -3,6 +3,7 @@ import { skybolt } from '@skybolt/vite-plugin'
 
 export default defineConfig({
     base: '/build/',
+    publicDir: false,  // Laravel's public/ is served directly by the web server
     build: {
         manifest: true,
         outDir: 'public/build',

@@ -74,9 +74,19 @@ export async function getCacheInfo(page: Page): Promise<CacheInfo> {
 
 export async function clearSkyboltState(page: Page): Promise<void> {
   await page.evaluate(async () => {
+    // Clear cache directly
+    try {
+      await caches.delete('skybolt-v1');
+    } catch {}
+    // Unregister all service workers
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((r) => r.unregister()));
+    } catch {}
+    // Clear cookies via skybolt if available
     const skybolt = (window as any).skybolt;
     if (skybolt) {
-      await skybolt.selfDestruct(false);
+      skybolt.clearCookies?.();
     }
   });
   await page.context().clearCookies();
@@ -100,6 +110,8 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
     test.beforeEach(async ({ page }) => {
       await page.goto(baseUrl);
       await clearSkyboltState(page);
+      // Navigate away to ensure clean slate for console log collection
+      await page.goto('about:blank');
     });
 
     test('1. Cold cache (first visit) - assets are inlined', async ({ page }) => {
@@ -114,20 +126,35 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
       await page.waitForTimeout(500);
 
       const skyboltLogs = getSkyboltLogs(logs);
-      const allErrors = getConsoleErrors(logs);
-      const errors = errorFilter ? allErrors.filter(errorFilter) : allErrors;
+      const errorLogs = logs.filter((log) => log.type() === 'error');
+      const filteredErrorLogs = errorFilter ? errorLogs.filter(errorFilter) : errorLogs;
+      const errors = filteredErrorLogs.map((log) => log.text());
 
       const swFailed = skyboltLogs.some((log) => log.includes('Service Worker registration failed'));
       expect(swFailed, 'Service Worker registration failed').toBe(false);
 
       expect(errors, 'Console error detected').toHaveLength(0);
 
-      expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
-      expect(skyboltLogs.some((log) => log.includes(`Found ${expectedAssetCount} assets to cache`))).toBe(true);
-      expect(skyboltLogs.some((log) => log.includes(`Ready (${expectedAssetCount} new assets cached)`))).toBe(true);
+      const logsDebug = `\n\nSkybolt logs:\n${skyboltLogs.join('\n') || '(none)'}`;
+
+      expect(
+        skyboltLogs.some((log) => log.includes('Service Worker ready')),
+        `Expected 'Service Worker ready' log${logsDebug}`
+      ).toBe(true);
+      expect(
+        skyboltLogs.some((log) => log.includes(`Found ${expectedAssetCount} assets to cache`)),
+        `Expected 'Found ${expectedAssetCount} assets to cache' log${logsDebug}`
+      ).toBe(true);
+      expect(
+        skyboltLogs.some((log) => log.includes(`Ready (${expectedAssetCount} new assets cached)`)),
+        `Expected 'Ready (${expectedAssetCount} new assets cached)' log${logsDebug}`
+      ).toBe(true);
 
       for (const asset of expectedAssets) {
-        expect(skyboltLogs.some((log) => log.includes(`Cached: ${asset}`))).toBe(true);
+        expect(
+          skyboltLogs.some((log) => log.includes(`Cached: ${asset}`)),
+          `Expected 'Cached: ${asset}' log${logsDebug}`
+        ).toBe(true);
       }
 
       const inlinedStyles = await page.locator('style[sb-asset]').count();
@@ -161,8 +188,12 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
       expect(failedRequests, 'Failed network request detected').toHaveLength(0);
 
       const skyboltLogs = getSkyboltLogs(logs);
+      const logsDebug = `\n\nSkybolt logs:\n${skyboltLogs.join('\n') || '(none)'}`;
 
-      expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
+      expect(
+        skyboltLogs.some((log) => log.includes('Service Worker ready')),
+        `Expected 'Service Worker ready' log${logsDebug}`
+      ).toBe(true);
 
       const inlinedStyles = await page.locator('style[sb-asset]').count();
       const inlinedScripts = await page.locator('script[sb-asset]').count();
@@ -188,8 +219,12 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
       await page.waitForTimeout(500);
 
       const skyboltLogs = getSkyboltLogs(logs);
+      const logsDebug = `\n\nSkybolt logs:\n${skyboltLogs.join('\n') || '(none)'}`;
 
-      expect(skyboltLogs.some((log) => log.includes('Service Worker ready'))).toBe(true);
+      expect(
+        skyboltLogs.some((log) => log.includes('Service Worker ready')),
+        `Expected 'Service Worker ready' log${logsDebug}`
+      ).toBe(true);
 
       const inlinedStyles = await page.locator('style[sb-asset]').count();
       const inlinedScripts = await page.locator('script[sb-asset]').count();

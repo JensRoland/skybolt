@@ -2,20 +2,20 @@
 
 # Install all dependencies
 install:
-	npm install
+	pnpm install
 	composer install
 
 # Build for production
 build:
-	npm run build
+	pnpm run build
 
 # Run PHP development server
 serve:
-	php -S localhost:8080 -t public public/router.php
+	pnpm run serve
 
 # Run Vite dev server (for HMR during development)
 dev:
-	npm run dev
+	pnpm run dev
 
 # Clean build artifacts
 clean:

@@ -36,3 +36,5 @@ Legacy jQuery plugins served as-is from `dist/js/`:
 - Isotope, PrettyPhoto, SlickNav
 - Leaflet maps
 - Site scripts
+
+The project has been outfitted with Bun and Vite for a slightly more modern build process.

@@ -27,6 +27,9 @@ func main() {
 	// Serve static files from the dist directory
 	r.Static("/static/dist", "./static/dist")
 
+	// Serve favicon from public folder
+	r.StaticFile("/favicon.ico", "./static/public/favicon.ico")
+
 	// Serve the service worker
 	r.GET("/skybolt-sw.js", func(c *gin.Context) {
 		swPath := filepath.Join("static", "dist", "skybolt-sw.js")

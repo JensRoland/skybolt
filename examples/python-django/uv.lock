@@ -30,8 +30,13 @@ wheels = [
 
 [[package]]
 name = "skybolt"
-version = "3.2.0"
+version = "3.4.0"
 source = { editable = "../../packages/python" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.0.1" }]
 
 [[package]]
 name = "skybolt-django-example"

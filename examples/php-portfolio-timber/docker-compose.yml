@@ -14,12 +14,6 @@ services:
     restart: unless-stopped
     networks:
       - timber-v3-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 2s
-      timeout: 5s
-      retries: 10
-      start_period: 5s
 
 networks:
   timber-v3-network:

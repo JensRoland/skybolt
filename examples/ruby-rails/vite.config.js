@@ -3,6 +3,7 @@ import { skybolt } from '@skybolt/vite-plugin'
 
 export default defineConfig({
     base: '/dist/',
+    publicDir: false, // Rails serves static files directly from public/
     build: {
         manifest: true,
         outDir: 'public/dist',
