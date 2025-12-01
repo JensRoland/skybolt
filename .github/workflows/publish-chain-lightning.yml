@@ -1,10 +1,10 @@
-name: Publish Vite Plugin to NPM
-run-name: Publish Vite Plugin to NPM for "${{ github.event.head_commit.message }}"
+name: Publish Chain Lightning to NPM
+run-name: Publish Chain Lightning to NPM for "${{ github.event.head_commit.message }}"
 
 on:
   push:
     tags:
-      - 'vite-plugin-v*'
+      - 'chain-lightning-v*'
   workflow_dispatch:
 
 jobs:
@@ -29,15 +29,15 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        working-directory: packages/vite-plugin
+        working-directory: packages/chain-lightning
         run: pnpm install
 
-      - name: Build (minify client)
-        working-directory: packages/vite-plugin
-        run: pnpm run minify
+      - name: Build
+        working-directory: packages/chain-lightning
+        run: pnpm run build
 
       - name: Publish to NPM
-        working-directory: packages/vite-plugin
+        working-directory: packages/chain-lightning
         run: pnpm publish --provenance --access public --no-git-checks
         env:
           NPM_CONFIG_PROVENANCE: true

@@ -1,6 +1,5 @@
+/*! Chain Lightning - @version 0.1.0 */
 /**
- * Chain Lightning Client Runtime
- *
  * Provides dynamic import with parallel dependency preloading.
  * Works with Skybolt for cache state tracking.
  */
