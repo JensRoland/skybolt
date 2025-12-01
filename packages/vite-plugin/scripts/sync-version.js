@@ -9,7 +9,6 @@
  * - index.js (SKYBOLT_VERSION constant)
  * - client.js (@version JSDoc tag)
  * - sw.js (@version JSDoc tag)
- * - ../../README.md (Version badge in header)
  * - client.min.js (regenerated)
  * - sw.min.js (regenerated)
  */
@@ -21,7 +20,6 @@ import { execSync } from 'node:child_process'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const packageDir = resolve(__dirname, '..')
-const rootDir = resolve(packageDir, '../..')
 
 // Read version from package.json
 const packageJson = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf-8'))
@@ -58,16 +56,6 @@ swContent = swContent.replace(
 )
 writeFileSync(swPath, swContent)
 console.log(`[sync-version] Updated sw.js`)
-
-// Update root README.md
-const readmePath = resolve(rootDir, 'README.md')
-let readmeContent = readFileSync(readmePath, 'utf-8')
-readmeContent = readmeContent.replace(
-  /\*\*Version:\*\* \S+/,
-  `**Version:** ${version}`
-)
-writeFileSync(readmePath, readmeContent)
-console.log(`[sync-version] Updated README.md`)
 
 // Regenerate minified files
 console.log(`[sync-version] Regenerating minified files...`)
