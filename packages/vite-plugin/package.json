@@ -1,6 +1,6 @@
 {
   "name": "@skybolt/vite-plugin",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "Vite plugin for Skybolt - High-performance asset caching for multi-page applications",
   "type": "module",
   "author": "Jens Roland <mail@jensroland.com> (https://jensroland.com)",
@@ -9,18 +9,22 @@
   "exports": {
     ".": {
       "import": "./index.js"
+    },
+    "./cache-digest": {
+      "import": "./cache-digest.js"
     }
   },
   "files": [
     "index.js",
     "client.js",
     "client.min.js",
+    "cache-digest.js",
     "sw.js",
     "README.md"
   ],
   "scripts": {
     "build": "pnpm run minify",
-    "minify": "esbuild client.js --minify --outfile=client.min.js && esbuild sw.js --minify --outfile=sw.min.js",
+    "minify": "esbuild client.js --bundle --minify --outfile=client.min.js && esbuild sw.js --minify --outfile=sw.min.js",
     "version": "node scripts/sync-version.js && git add .",
     "postversion": "git commit -m \"chore(vite-plugin): release v$npm_package_version\" && git tag vite-plugin-v$npm_package_version && echo \"\\nRun 'git push origin main --tags' to publish\""
   },

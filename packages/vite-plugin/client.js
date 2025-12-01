@@ -1,12 +1,18 @@
-/*! Skybolt - @version 3.4.0 */
+/*! Skybolt - @version 3.5.0 */
 /**
  * Registers Service Worker and coordinates cache state via cookies.
  * Extracts inlined assets and stores them in Cache API.
  */
 
+import { CuckooFilter } from './cache-digest.js'
+
 const CACHE_NAME = 'skybolt-v1'
-const COOKIE_NAME = 'sb_assets'
+const COOKIE_NAME = 'sb_digest'
 const COOKIE_MAX_AGE = 31536000 // 1 year
+
+// ============================================================================
+// Skybolt Client
+// ============================================================================
 
 class SkyboltClient {
   constructor() {
@@ -15,6 +21,9 @@ class SkyboltClient {
 
     /** @type {ServiceWorkerRegistration|null} */
     this.registration = null
+
+    /** @type {{swPath: string}} */
+    this.config = null
 
     this.init()
   }
@@ -39,8 +48,8 @@ class SkyboltClient {
 
     // Register Service Worker
     try {
-      const config = this.loadConfig()
-      this.registration = await navigator.serviceWorker.register(config.swPath, {
+      this.config = this.loadConfig()
+      this.registration = await navigator.serviceWorker.register(this.config.swPath, {
         scope: '/'
       })
 
@@ -76,15 +85,16 @@ class SkyboltClient {
    * @returns {{swPath: string}}
    */
   loadConfig() {
+    const defaults = { swPath: '/skybolt-sw.js' }
     const meta = document.querySelector('meta[name="skybolt-config"]')
     if (meta) {
       try {
-        return JSON.parse(meta.content)
+        return { ...defaults, ...JSON.parse(meta.content) }
       } catch (err) {
         console.warn('[Skybolt] Invalid config meta tag')
       }
     }
-    return { swPath: '/skybolt-sw.js' }
+    return defaults
   }
 
   /**
@@ -212,8 +222,8 @@ class SkyboltClient {
   }
 
   /**
-   * Update the sb_assets cookie based on actual Cache API contents
-   * This ensures the cookie always reflects reality
+   * Update cookie based on actual Cache API contents
+   * Uses Cache Digest (Cuckoo filter) for compact storage
    */
   async updateCookieFromCache() {
     try {
@@ -233,75 +243,19 @@ class SkyboltClient {
         }
       }
 
-      // Write cookie from cache contents
-      const data = Object.entries(versions)
-        .map(([name, hash]) => `${name}:${hash}`)
-        .join(',')
+      const entries = Object.entries(versions)
+      if (entries.length === 0) return
 
-      if (data) {
-        const encoded = encodeURIComponent(data)
-        if (encoded.length > 4090) {
-          this.updateCookieSharded(encoded)
-        } else {
-          document.cookie = `${COOKIE_NAME}=${encoded}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
-        }
+      // Write Cache Digest cookie (compact Cuckoo filter)
+      const filter = new CuckooFilter(entries.length)
+      for (const [name, hash] of entries) {
+        filter.insert(`${name}:${hash}`)
       }
+      const digest = filter.toBase64()
+      document.cookie = `${COOKIE_NAME}=${digest}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
+      console.log(`[Skybolt] Cache state stored (${digest.length} bytes, ${entries.length} assets)`)
     } catch (err) {
       console.error('[Skybolt] Failed to update cookie from cache:', err)
-    }
-  }
-
-  /**
-   * Update cookies with sharding for large data
-   * @param {string} encoded - URL-encoded cookie data
-   */
-  updateCookieSharded(encoded) {
-    const maxSize = 4090
-    const chunks = []
-
-    // Split at safe boundaries
-    let offset = 0
-    while (offset < encoded.length) {
-      let chunkSize = Math.min(maxSize, encoded.length - offset)
-
-      // Try to break at encoded comma (%2C) if not at end
-      if (offset + chunkSize < encoded.length) {
-        const chunk = encoded.substring(offset, offset + chunkSize)
-        const lastComma = chunk.lastIndexOf('%2C')
-        if (lastComma > 0) {
-          chunkSize = lastComma + 3 // Include the %2C
-        }
-      }
-
-      chunks.push(encoded.substring(offset, offset + chunkSize))
-      offset += chunkSize
-    }
-
-    // Write chunks
-    chunks.forEach((chunk, i) => {
-      const cookieName = i === 0 ? COOKIE_NAME : `${COOKIE_NAME}_${i + 1}`
-      document.cookie = `${cookieName}=${chunk}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
-    })
-
-    // Write count if multiple chunks
-    if (chunks.length > 1) {
-      document.cookie = `${COOKIE_NAME}_count=${chunks.length}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`
-    }
-
-    // Clean up extra cookies from previous runs
-    this.cleanupExtraCookies(chunks.length)
-  }
-
-  /**
-   * Remove extra cookie chunks from previous sessions
-   * @param {number} keepCount - Number of chunks to keep
-   */
-  cleanupExtraCookies(keepCount) {
-    for (let i = keepCount + 1; i <= 10; i++) {
-      document.cookie = `${COOKIE_NAME}_${i}=; path=/; max-age=0`
-    }
-    if (keepCount <= 1) {
-      document.cookie = `${COOKIE_NAME}_count=; path=/; max-age=0`
     }
   }
 
@@ -343,10 +297,6 @@ class SkyboltClient {
    */
   clearCookies() {
     document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`
-    document.cookie = `${COOKIE_NAME}_count=; path=/; max-age=0`
-    for (let i = 2; i <= 10; i++) {
-      document.cookie = `${COOKIE_NAME}_${i}=; path=/; max-age=0`
-    }
   }
 
   /**

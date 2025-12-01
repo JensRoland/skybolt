@@ -163,6 +163,45 @@ skybolt({
 6. Client updates cache and cookie
 7. **Automatic invalidation!**
 
+## Cache Digest
+
+Skybolt uses **Cache Digest** - a Cuckoo filter-based probabilistic data structure that provides compact cookie storage for cache state tracking.
+
+### Size Comparison
+
+Instead of storing asset names and hashes explicitly (`src/css/main.css:Pw3rT8vL,...`), Skybolt compresses this into a compact binary filter stored in the `sb_digest` cookie:
+
+| Assets | Plain Text   | Cache Digest | Compression |
+| ------ | ------------ | ------------ | ----------- |
+| 10     | ~400 bytes   | ~50 bytes    | **88%**     |
+| 50     | ~2,000 bytes | ~350 bytes   | **84%**     |
+| 100    | ~4,000 bytes | ~700 bytes   | **84%**     |
+| 200    | ~8,000 bytes | ~1,400 bytes | **84%**     |
+
+### Trade-offs
+
+- **No false negatives:** If an asset is cached, the filter will always report it
+- **Small false positive rate (~1-3%):** Occasionally reports uncached assets as cached, causing a network fetch instead of inline - a minor one-time performance hit
+- **Supports deletion:** Unlike Bloom filters, items can be removed when evicting or invalidating cache entries
+
+### API
+
+```javascript
+import { CuckooFilter, createCacheDigest } from '@skybolt/vite-plugin/cache-digest'
+
+// Create from asset list
+const assets = ['src/css/main.css:Pw3rT8vL', 'src/js/app.js:Km5nR2xQ']
+const digest = createCacheDigest(assets)
+
+// Serialize to cookie (URL-safe base64)
+const cookie = digest.toBase64()
+
+// Restore on server
+const restored = CuckooFilter.fromBase64(cookie)
+restored.lookup('src/css/main.css:Pw3rT8vL')  // true
+restored.lookup('unknown:asset')              // false (definitely not present)
+```
+
 ## Render Map Schema
 
 The `render-map.json` contains everything server adapters need:
