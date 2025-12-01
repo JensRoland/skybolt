@@ -17,7 +17,7 @@ make build
 make serve
 ```
 
-Visit: http://localhost:8080
+Visit: <http://localhost:8080>
 
 ## Architecture
 

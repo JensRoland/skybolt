@@ -20,7 +20,7 @@ make serve
 
 ## File Structure
 
-```
+```text
 node-express/
 ├── src/
 │   ├── css/
