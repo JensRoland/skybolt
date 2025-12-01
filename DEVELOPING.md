@@ -14,7 +14,7 @@ All language adapter packages use the same release flow:
 
 Simply run:
 
-```bash
+```sh
 cd packages/[php|python|ruby|go|javascript]
 ./scripts/release.sh patch   # 3.1.0 → 3.1.1
 ./scripts/release.sh minor   # 3.1.0 → 3.2.0
@@ -27,7 +27,7 @@ Use `--no-push` to stage changes without pushing (for review).
 
 The `vite-plugin` package uses npm's built-in versioning:
 
-```bash
+```sh
 cd packages/vite-plugin
 npm version patch  # or minor/major
 ```
@@ -38,12 +38,16 @@ This runs `scripts/sync-version.js` to update version references, commits, tags,
 
 The `chain-lightning` package uses npm's built-in versioning:
 
-```bash
+```sh
 cd packages/chain-lightning
 npm version patch  # or minor/major
 ```
 
 This runs `scripts/sync-version.js` to update version references, commits, tags, and pushes.
+
+## Adding A Package To Packagist (PHP)
+
+Go to <https://packagist.org/packages/submit> and submit the GitHub repo URL for the new package.
 
 ## Adding A Package To NPM
 
@@ -102,7 +106,7 @@ gh repo create JensRoland/skybolt-[language] --public
 
 The monorepo needs a deploy key to push to the split repo.
 
-```bash
+```sh
 # Generate a new SSH key pair (no passphrase)
 ssh-keygen -t ed25519 -C "skybolt-[language]-deploy" -f skybolt-[language]-deploy
 
@@ -148,7 +152,7 @@ Each language has different registry setup, but you'll likely need to configure 
 
 You can't run all the smoke tests from one place, since you first have to build and serve each example. But you can run each example's tests from its directory:
 
-```bash
+```sh
 # Run tests for an example (from example directory)
 cd examples/node-express
 make test

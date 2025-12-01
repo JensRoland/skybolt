@@ -73,7 +73,7 @@ However, if you are here, you are likely more performance-obsessed than average,
 
 ### 1. Install Vite Plugin
 
-```bash
+```sh
 npm install @skybolt/vite-plugin
 ```
 
@@ -104,7 +104,7 @@ Choose your language:
 <details>
 <summary><strong>PHP</strong></summary>
 
-```bash
+```sh
 composer require jensroland/skybolt
 ```
 
@@ -127,7 +127,7 @@ $sb = new Skybolt\Skybolt(__DIR__ . '/dist/.skybolt/render-map.json');
 <details>
 <summary><strong>Python</strong></summary>
 
-```bash
+```sh
 pip install skybolt
 # or: uv add skybolt
 ```
@@ -182,7 +182,7 @@ sb = Skybolt::Renderer.new(
 <details>
 <summary><strong>Go</strong></summary>
 
-```bash
+```sh
 go get github.com/JensRoland/skybolt-go
 ```
 
@@ -205,7 +205,7 @@ sb.Script("src/js/app.js", true)
 <details>
 <summary><strong>Node.js / Bun</strong></summary>
 
-```bash
+```sh
 npm install @skybolt/server-adapter
 ```
 
@@ -231,13 +231,13 @@ const skybolt = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
 
 ### 3. Build and Run
 
-```bash
+```sh
 npm run build
 ```
 
 Then start your server:
 
-```bash
+```sh
 # PHP
 php -S localhost:8080 -t public
 

@@ -128,7 +128,7 @@ Client cache state is tracked via cookies because:
 
 ### Running the Example
 
-```bash
+```sh
 cd examples/php-vanilla
 
 # Install dependencies
@@ -145,7 +145,7 @@ make serve
 
 ### Minifying Client Script
 
-```bash
+```sh
 cd packages/vite-plugin
 npm run minify  # Creates client.min.js
 ```
