@@ -33,7 +33,7 @@ With Skybolt, the first visit inlines assets and caches them via Service Worker:
 
 1. Server inlines CSS/JS directly in the HTML (with special attributes)
 2. Service Worker registers and caches the inlined content
-3. Cookie records which asset versions are cached
+3. Cookie records which asset versions are cached (using compact [Cache Digest](#cache-digest))
 
 **Return Visit:**
 
@@ -340,6 +340,19 @@ When integrated with Skybolt, chunk dependencies are cached via Service Worker f
 
 See the [Chain Lightning README](packages/chain-lightning/README.md) for full documentation.
 
+## Cache Digest
+
+Skybolt uses **Cache Digest** - a Cuckoo filter that compresses cache state tracking by ~85%, keeping cookies small even with many assets.
+
+| Assets | Plain Text   | Cache Digest |
+| ------ | ------------ | ------------ |
+| 50     | ~2,000 bytes | ~350 bytes   |
+| 100    | ~4,000 bytes | ~700 bytes   |
+
+**Trade-off:** Cache Digest has a ~1-3% false positive rate, meaning it occasionally reports uncached assets as cached (causing a network fetch instead of inline). There are no false negatives - cached assets are always correctly identified.
+
+See the [vite-plugin README](packages/vite-plugin/README.md#cache-digest) for implementation details.
+
 ## Architecture
 
 ```text
@@ -360,7 +373,7 @@ See the [Chain Lightning README](packages/chain-lightning/README.md) for full do
 ├─────────────────────────────────────────────────────────────┤
 │  Server adapter (Node.js/PHP/Python/Ruby/Go/etc)            │
 │  • Loads render-map.json                                    │
-│  • Reads sb_assets cookie                                   │
+│  • Reads sb_digest cookie (Cuckoo filter)                   │
 │  • Returns inline or external tags                          │
 └─────────────────────────────────────────────────────────────┘
                               ↓

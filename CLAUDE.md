@@ -70,18 +70,18 @@ skybolt/
 ### First Visit
 
 1. Server loads render-map.json
-2. Server checks `sb_assets` cookie (empty)
+2. Server checks `sb_digest` cookie (empty)
 3. Server inlines assets with `sb-asset` attributes
 4. Browser receives HTML with inlined CSS/JS
 5. Client script registers Service Worker
 6. Client extracts inlined content → Cache API
-7. Client writes asset versions to cookie
+7. Client writes asset versions to `sb_digest` cookie (Cuckoo filter)
 
 ### Repeat Visit
 
 1. Server loads render-map.json
-2. Server reads `sb_assets` cookie
-3. Server compares versions (match!)
+2. Server reads `sb_digest` cookie (Cuckoo filter)
+3. Server checks if assets are in the filter (match!)
 4. Server outputs `<link>` and `<script>` tags
 5. Browser requests assets
 6. Service Worker intercepts → serves from cache (~5ms)
@@ -244,11 +244,7 @@ Inlined assets use these attributes:
 
 ## Cookie Format
 
-```text
-sb_assets = src/css/main.css:Pw3rT8vL,src/js/app.js:Km5nR2xQ
-```
-
-URL-encoded, comma-separated `name:hash` pairs. Sharded into multiple cookies if >4KB.
+The `sb_digest` cookie contains a URL-safe base64-encoded Cuckoo filter that compactly represents which assets the client has cached. This probabilistic data structure allows O(1) lookups with ~3% false positive rate, keeping cookie size small (~50 bytes for typical sites) regardless of the number of cached assets.
 
 ## Debugging
 

@@ -19,7 +19,6 @@ export interface SkyboltTestConfig {
   expectedAssetCount: number;
   expectedInlinedStyles: number;
   expectedInlinedScripts: number;
-  cookieAssetPattern?: string;
   cachePathPatterns: string[];
   errorFilter?: (log: ConsoleMessage) => boolean;
 }
@@ -91,7 +90,6 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
     expectedAssetCount,
     expectedInlinedStyles,
     expectedInlinedScripts,
-    cookieAssetPattern,
     cachePathPatterns,
     errorFilter,
   } = config;
@@ -142,11 +140,8 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
       expect(cacheInfo.name).toBe('skybolt-v1');
 
       const cookies = await page.context().cookies();
-      const sbCookie = cookies.find((c) => c.name === 'sb_assets');
+      const sbCookie = cookies.find((c) => c.name === 'sb_digest');
       expect(sbCookie).toBeDefined();
-      if (cookieAssetPattern) {
-        expect(sbCookie!.value).toContain(cookieAssetPattern);
-      }
     });
 
     test('2. Warm cache (second visit) - assets served from cache', async ({ page }) => {

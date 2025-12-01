@@ -188,7 +188,7 @@ export class ChainLightning {
   #isChunkCached(specifier, hash) {
     if (!this.#skybolt) return false
     // Use hasCachedEntry since chunks are not in Skybolt's render-map
-    // but are tracked in the sb_assets cookie with their specifier as the entry name
+    // but are tracked in the sb_digest cookie with their specifier as the entry name
     return this.#skybolt.hasCachedEntry(specifier, hash)
   }
 

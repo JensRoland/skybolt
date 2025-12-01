@@ -61,7 +61,7 @@ The client script extracts inlined content, caches it, and sets a cookie.
 
 ### Repeat Visit
 
-Server reads the `sb_assets` cookie, detects cached versions match, and outputs standard `<link>` and `<script>` tags. Service Worker intercepts and serves from cache.
+Server reads the `sb_digest` cookie (Cuckoo filter), detects cached versions match, and outputs standard `<link>` and `<script>` tags. Service Worker intercepts and serves from cache.
 
 ## Testing the Cache
 
