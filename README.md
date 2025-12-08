@@ -342,12 +342,14 @@ See the [Chain Lightning README](packages/chain-lightning/README.md) for full do
 
 ## Cache Digest
 
-Skybolt uses **Cache Digest** - a Cuckoo filter that compresses cache state tracking by ~85%, keeping cookies small even with many assets.
+Skybolt uses **Cache Digest** - specifically a Cuckoo filter-based digest that compresses cache state tracking by ~85%, keeping cookies small even when tracking hundreds of assets.
 
 | Assets | Plain Text   | Cache Digest |
 | ------ | ------------ | ------------ |
 | 50     | ~2,000 bytes | ~350 bytes   |
 | 100    | ~4,000 bytes | ~700 bytes   |
+
+This mechanism has been proposed as a standard for HTTP caching and was described in the context of HTTP/2 Server Push in the [Web Performance Calendar 2016](https://calendar.perfplanet.com/2016/cache-digests-http2-server-push/).
 
 **Trade-off:** Cache Digest has a ~1-3% false positive rate, meaning it occasionally reports uncached assets as cached (causing a network fetch instead of inline). There are no false negatives - cached assets are always correctly identified.
 
