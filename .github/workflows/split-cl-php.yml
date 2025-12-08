@@ -1,4 +1,4 @@
-name: Split PHP Package
+name: Split CL PHP Package
 run-name: Push to Chain Lightning PHP repo for "${{ github.event.head_commit.message }}"
 
 on:
