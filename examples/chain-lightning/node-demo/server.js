@@ -40,8 +40,8 @@ app.get('/', (req, res) => {
   // Initialize Skybolt for CSS caching
   const sb = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
 
-  // Initialize Chain Lightning with Skybolt for cache-aware preloading
-  const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', sb)
+  // Initialize Chain Lightning with User-Agent (for Firefox detection) and Skybolt
+  const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', req.headers['user-agent'], sb)
 
   const html = `<!DOCTYPE html>
 <html lang="en">

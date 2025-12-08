@@ -15,8 +15,8 @@ use ChainLightning\ChainLightning;
 // Initialize Skybolt for CSS caching
 $sb = new Skybolt(__DIR__ . '/../dist/.skybolt/render-map.json');
 
-// Initialize Chain Lightning with Skybolt for cache-aware preloading
-$cl = new ChainLightning(__DIR__ . '/../dist/.chain-lightning/manifest.json', $sb);
+// Initialize Chain Lightning with User-Agent (for Firefox detection) and Skybolt
+$cl = new ChainLightning(__DIR__ . '/../dist/.chain-lightning/manifest.json', $_SERVER['HTTP_USER_AGENT'] ?? '', $sb);
 
 ?>
 <!DOCTYPE html>

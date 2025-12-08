@@ -30,7 +30,7 @@ The `vite-plugin` package uses npm's built-in versioning:
 
 ```sh
 cd packages/vite-plugin
-npm version patch  # or minor/major
+pnpm version patch  # or minor/major
 
 # Then, when ready to publish:
 git push origin main --tags
@@ -44,7 +44,7 @@ The `chain-lightning` package uses npm's built-in versioning:
 
 ```sh
 cd packages/chain-lightning
-npm version patch  # or minor/major
+pnpm version patch  # or minor/major
 
 # Then, when ready to publish:
 git push origin main --tags
