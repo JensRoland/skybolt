@@ -56,15 +56,21 @@ export class ChainLightning {
   /** @type {Set<string>} */
   #handledChunks = new Set()
 
+  /** @type {boolean} */
+  #isFirefox = false
+
   /**
    * Create a Chain Lightning instance
    * @param {string} manifestPath - Path to the Chain Lightning manifest.json
+   * @param {string} [userAgent] - Optional User-Agent header for browser detection
    * @param {object} [skybolt] - Optional Skybolt instance for cache state and inlining
    */
-  constructor(manifestPath, skybolt = null) {
+  constructor(manifestPath, userAgent = '', skybolt = null) {
     const content = readFileSync(manifestPath, 'utf-8')
     this.#manifest = JSON.parse(content)
     this.#skybolt = skybolt
+    // Firefox doesn't support multiple import maps, so we disable data URL inlining
+    this.#isFirefox = /Firefox\//i.test(userAgent)
   }
 
   /**
@@ -270,7 +276,8 @@ export class ChainLightning {
    * @returns {string} HTML for chunk importmaps, preloads, and component script tag (empty if already rendered)
    */
   component(componentName, options = {}) {
-    const { inlineDeps = false } = options
+    // Firefox doesn't support multiple import maps, so disable inlining even if requested
+    const inlineDeps = this.#isFirefox ? false : (options.inlineDeps ?? false)
 
     const component = this.#manifest.components[componentName]
     if (!component) {

@@ -95,7 +95,7 @@ import { ChainLightning } from '@skybolt/chain-lightning/server'
 const app = express()
 
 app.get('/', (req, res) => {
-  const cl = new ChainLightning('./dist/.chain-lightning/manifest.json')
+  const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', req.headers['user-agent'])
 
   res.send(`
     <!DOCTYPE html>
@@ -132,7 +132,7 @@ app.get('/', (req, res) => {
   const sb = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
 
   // Chain Lightning uses Skybolt for cache-aware decisions
-  const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', sb)
+  const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', req.headers['user-agent'], sb)
 
   res.send(`
     <!DOCTYPE html>
@@ -186,7 +186,7 @@ chainLightning({
 ```javascript
 import { ChainLightning } from '@skybolt/chain-lightning/server'
 
-const cl = new ChainLightning(manifestPath, skyboltInstance?)
+const cl = new ChainLightning(manifestPath, userAgent?, skyboltInstance?)
 
 cl.headScripts()                            // Render all head scripts (convenience)
 cl.importMap()                              // Render <script type="importmap">
@@ -320,6 +320,20 @@ Chain Lightning derives the **major version** from each dependency's `package.js
 - Old specifier preserved: `"chunk:debounce@4"` → `/assets/debounce-xyz789.js`
 - `search-component` keeps importing `@4`, `admin-panel` imports `@5`
 - **Both versions coexist safely** - components upgrade independently
+
+## Browser Compatibility
+
+Chain Lightning uses multiple `<script type="importmap">` tags to provide override mappings for chunk dependencies. This is supported by **Chrome** and **Safari**, but **Firefox does not yet support multiple import maps**.
+
+To handle this automatically, pass the User-Agent header to the constructor:
+
+```javascript
+const cl = new ChainLightning(manifestPath, req.headers['user-agent'], skybolt)
+```
+
+When Firefox is detected, Chain Lightning automatically disables data URL inlining (ignoring `inlineDeps: true`) and falls back to regular URLs. This ensures components work correctly in Firefox, though without the first-visit inlining optimization.
+
+Track Firefox's progress on multiple import maps: [Bug 1688879](https://bugzilla.mozilla.org/show_bug.cgi?id=1688879)
 
 ## License
 
