@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jensroland/skybolt.git",
+    "url": "git+https://github.com/JensRoland/skybolt.git",
     "directory": "packages/chain-lightning"
   }
 }
