@@ -4,7 +4,9 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false, // Tests need to run sequentially for cache state
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  // No retries - flaky tests should fail immediately so we catch real issues
+  // Previously retries: 2 in CI caused flaky tests to show as "passed" even when broken
+  retries: 0,
   workers: 1, // Single worker for cache state consistency
   reporter: process.env.CI ? 'github' : 'list',
   timeout: 10000,
