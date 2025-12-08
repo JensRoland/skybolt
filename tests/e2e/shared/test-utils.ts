@@ -107,11 +107,18 @@ export function createSkyboltTests(config: SkyboltTestConfig) {
   test.describe(`Skybolt ${name}`, () => {
     test.describe.configure({ mode: 'serial' });
 
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page, context }) => {
+      // Clear ALL cookies at context level BEFORE any navigation
+      // This ensures the server doesn't see stale cookies on first request
+      await context.clearCookies();
       await page.goto(baseUrl);
       await clearSkyboltState(page);
+      // Clear again after clearing browser state to ensure complete cleanup
+      await context.clearCookies();
       // Navigate away to ensure clean slate for console log collection
       await page.goto('about:blank');
+      // Final cookie clear - critical for ensuring test isolation
+      await context.clearCookies();
     });
 
     test('1. Cold cache (first visit) - assets are inlined', async ({ page }) => {

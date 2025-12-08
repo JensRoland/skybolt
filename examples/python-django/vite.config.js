@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { skybolt } from '@skybolt/vite-plugin'
 
 export default defineConfig({
-    base: '/static/',
+    base: '/static/dist/',
     build: {
         manifest: true,
         outDir: 'static/dist',
