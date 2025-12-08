@@ -43,16 +43,20 @@ class ChainLightning
     /** @var array<string, bool> */
     private array $handledChunks = [];
 
+    /** @var bool */
+    private bool $isFirefox = false;
+
     /**
      * Create a new Chain Lightning instance
      *
      * @param string $manifestPath Path to Chain Lightning manifest.json
+     * @param string $userAgent Optional User-Agent header for browser detection
      * @param Skybolt|null $skybolt Optional Skybolt instance for cache state
      *
      * @throws \RuntimeException If manifest cannot be read
      * @throws \JsonException If manifest contains invalid JSON
      */
-    public function __construct(string $manifestPath, ?Skybolt $skybolt = null)
+    public function __construct(string $manifestPath, string $userAgent = '', ?Skybolt $skybolt = null)
     {
         $json = @file_get_contents($manifestPath);
 
@@ -62,6 +66,8 @@ class ChainLightning
 
         $this->manifest = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         $this->skybolt = $skybolt;
+        // Firefox doesn't support multiple import maps, so we disable data URL inlining
+        $this->isFirefox = (bool) preg_match('/Firefox\//i', $userAgent);
     }
 
     /**
@@ -262,6 +268,11 @@ class ChainLightning
      */
     public function component(string $componentName, bool $inlineDeps = false): string
     {
+        // Firefox doesn't support multiple import maps, so disable inlining even if requested
+        if ($this->isFirefox) {
+            $inlineDeps = false;
+        }
+
         $component = $this->manifest['components'][$componentName] ?? null;
         if ($component === null) {
             trigger_error("Chain Lightning: Component \"{$componentName}\" not found in manifest", E_USER_WARNING);

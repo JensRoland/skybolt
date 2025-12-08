@@ -14,7 +14,7 @@ composer require jensroland/chain-lightning
 <?php
 use ChainLightning\ChainLightning;
 
-$cl = new ChainLightning('./dist/.chain-lightning/manifest.json');
+$cl = new ChainLightning('./dist/.chain-lightning/manifest.json', $_SERVER['HTTP_USER_AGENT'] ?? '');
 ?>
 <!DOCTYPE html>
 <html>
@@ -41,7 +41,7 @@ use ChainLightning\ChainLightning;
 $sb = new Skybolt('./dist/.skybolt/render-map.json');
 
 // Chain Lightning uses Skybolt for cache-aware decisions
-$cl = new ChainLightning('./dist/.chain-lightning/manifest.json', $sb);
+$cl = new ChainLightning('./dist/.chain-lightning/manifest.json', $_SERVER['HTTP_USER_AGENT'] ?? '', $sb);
 ?>
 <!DOCTYPE html>
 <html>
@@ -67,7 +67,7 @@ When integrated with Skybolt:
 ```php
 use ChainLightning\ChainLightning;
 
-$cl = new ChainLightning($manifestPath, $skyboltInstance = null);
+$cl = new ChainLightning($manifestPath, $userAgent = '', $skyboltInstance = null);
 
 // Convenience method - renders all head scripts
 $cl->headScripts();

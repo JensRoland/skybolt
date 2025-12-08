@@ -321,7 +321,7 @@ export default defineConfig({
 ```javascript
 // server.js
 const sb = new Skybolt('./dist/.skybolt/render-map.json', req.cookies)
-const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', sb)
+const cl = new ChainLightning('./dist/.chain-lightning/manifest.json', req.headers['user-agent'], sb)
 
 res.send(`
   <head>
